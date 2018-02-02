@@ -1,0 +1,43 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+VisualStudioVersion = 15.0.27130.2020
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HarakaMQ.Client", "HarakaMQ.Client\HarakaMQ.Client.csproj", "{29CC7FCA-E3D3-4386-A324-A7564181C998}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HarakaMQ.MessageBroker", "HarakaMQ.MessageBroker\HarakaMQ.MessageBroker.csproj", "{FA6C482E-9CB3-48BA-9B63-3BC99FA9A6B0}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HarakaMQ.DB", "HarakaMQ.DB\HarakaMQ.DB.csproj", "{C55187F3-A91E-41C5-9AE5-DA10A55D85CF}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HarakaMQ.UDPCommunication", "HarakaMQ.UDPCommunication\HarakaMQ.UDPCommunication.csproj", "{0E7FE2B7-3145-40F0-B294-491228C2FFB7}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{29CC7FCA-E3D3-4386-A324-A7564181C998}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{29CC7FCA-E3D3-4386-A324-A7564181C998}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{29CC7FCA-E3D3-4386-A324-A7564181C998}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{29CC7FCA-E3D3-4386-A324-A7564181C998}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FA6C482E-9CB3-48BA-9B63-3BC99FA9A6B0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FA6C482E-9CB3-48BA-9B63-3BC99FA9A6B0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FA6C482E-9CB3-48BA-9B63-3BC99FA9A6B0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FA6C482E-9CB3-48BA-9B63-3BC99FA9A6B0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C55187F3-A91E-41C5-9AE5-DA10A55D85CF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C55187F3-A91E-41C5-9AE5-DA10A55D85CF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C55187F3-A91E-41C5-9AE5-DA10A55D85CF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C55187F3-A91E-41C5-9AE5-DA10A55D85CF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0E7FE2B7-3145-40F0-B294-491228C2FFB7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0E7FE2B7-3145-40F0-B294-491228C2FFB7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0E7FE2B7-3145-40F0-B294-491228C2FFB7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0E7FE2B7-3145-40F0-B294-491228C2FFB7}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {0FA9BE1D-0851-4E46-B9CE-74330C2287C3}
+	EndGlobalSection
+EndGlobal

@@ -3,7 +3,7 @@ Reliable Message Oriented Middleware Based on UDP
 
 # Message Broker
 
-Start up the Broker by building the MessageBroker project, and runs it with the command "dotnet run".
+Start up the Broker by building the MessageBroker project, and runs it with the command "dotnet HarakaMQ.MessageBroker.dll".
 Remember to add a "settings.json" file in the running directory with this content:
 
 ```json

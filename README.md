@@ -4,7 +4,7 @@ Reliable Message Oriented Middleware Based on UDP
 # Message Broker
 
 Start up the Broker by building the MessageBroker project, and runs it with the command "dotnet run".
-Remember to add a "Settings.json" file in the running directory with this content
+Remember to add a "settings.json" file in the running directory with this content
 
 ```json
 {  

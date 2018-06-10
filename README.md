@@ -1,6 +1,9 @@
 # HarakaMQ
 Reliable Message Oriented Middleware Based on UDP
 
+# Broker
+
+Start up the Broker by building the broker project, and runs it with the command "dotnet run".
 
 # Send
 

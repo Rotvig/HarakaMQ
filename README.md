@@ -18,7 +18,7 @@ Remember to add a "settings.json" file in the running directory with this conten
 
 You can also use the pre-builded Message broker (Client-Server setup) from this project https://github.com/Rotvig/HarakaMQ-Benchmark/tree/master/ClientServerSetup/Broker
 
-# Send
+# Publish
 
 ```csharp
 var factory = new ConnectionFactory {HostName = "127.0.0.1", ListenPort = 11000, Port = 11100};
@@ -33,7 +33,7 @@ using (var channel = connection.CreateModel())
 }
 ```
 
-# Recieve
+# Subscribe
 
 ```csharp
 var factory = new ConnectionFactory {HostName = "127.0.0.1", ListenPort = 12000, Port = 11100};

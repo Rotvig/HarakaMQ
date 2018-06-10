@@ -1,9 +1,20 @@
 # HarakaMQ
 Reliable Message Oriented Middleware Based on UDP
 
-# Broker
+# Message Broker
 
 Start up the Broker by building the MessageBroker project, and runs it with the command "dotnet run".
+Remember to add a "Settings.json" file in the running directory with this content
+
+```json
+{  
+   "BrokerPort":11100,
+   "PrimaryNumber":1,
+   "AntiEntropyMilliseonds":1000,
+   "RunInCLusterSetup":false,
+   "Brokers":[]
+}
+```
 
 # Send
 

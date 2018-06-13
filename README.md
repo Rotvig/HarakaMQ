@@ -1,5 +1,5 @@
 # HarakaMQ
-Reliable Message Oriented Middleware Based on UDP
+Reliable Message Oriented Middleware Based on UDP and created with Dotnet 2.0
 
 # Message Broker
 

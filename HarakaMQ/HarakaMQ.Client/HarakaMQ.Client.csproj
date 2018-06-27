@@ -1,7 +1,21 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>netcoreapp2.0</TargetFramework>
+    <Authors>René Rotvig Jensen</Authors>
+    <Company />
+    <Title>HarakaMQ.Client</Title>
+    <Product>HarakaMQ</Product>
+    <Copyright>René Rotvig Jensen</Copyright>
+    <PackageLicenseUrl>https://github.com/Rotvig/HarakaMQ/blob/master/LICENSE</PackageLicenseUrl>
+    <PackageProjectUrl>https://github.com/Rotvig/HarakaMQ</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/Rotvig/HarakaMQ</RepositoryUrl>
+    <PackageTags>Middleware, udp, reliability, messagequeue</PackageTags>
+    <PackageReleaseNotes>First version of the HarakaMQ Client. See examples on github.</PackageReleaseNotes>
+    <Description>HarakaMQ Client is a reliable high performance message subscriber/publisher for at HarakaMQ Broker.
+</Description>
+    <RepositoryType>Git</RepositoryType>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
   </PropertyGroup>
 
   <ItemGroup>

@@ -1,7 +1,19 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>netcoreapp2.0</TargetFramework>
+    <Authors>René Rotvig Jensen</Authors>
+    <Title>HarakaMQ.DB</Title>
+    <Company />
+    <Description>The local message storage project for HarakaMQ.UDPCommunication</Description>
+    <Copyright>René Rotvig Jensen</Copyright>
+    <PackageLicenseUrl>https://github.com/Rotvig/HarakaMQ/blob/master/LICENSE</PackageLicenseUrl>
+    <PackageProjectUrl>https://github.com/Rotvig/HarakaMQ</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/Rotvig/HarakaMQ</RepositoryUrl>
+    <RepositoryType>Git</RepositoryType>
+    <PackageTags>localstorage db</PackageTags>
+    <PackageReleaseNotes>First version of the HarakaMQ.DB.</PackageReleaseNotes>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
   </PropertyGroup>
 
   <ItemGroup>

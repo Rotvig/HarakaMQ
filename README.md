@@ -1,6 +1,10 @@
 # HarakaMQ
 Reliable Message Oriented Middleware Based on UDP and created with .NET Core 2.0
 
+# Nuget
+## HarakaMQ.Client
+https://www.nuget.org/packages/HarakaMQ.Client/
+
 # Message Broker
 
 Start up the Broker by building the MessageBroker project, and runs it with the command "dotnet HarakaMQ.MessageBroker.dll".
@@ -26,7 +30,7 @@ using (var connection = factory.CreateConnection())
 using (var channel = connection.CreateModel())
 {
     channel.QueueDeclare("hello");
-    channel.BasicPublish("hello", Encoding.UTF8.GetBytes("Hello world");
+    channel.BasicPublish("hello", Encoding.UTF8.GetBytes("Hello world"));
 
     Console.WriteLine(" Press [enter] to exit.");
     Console.ReadLine();
@@ -46,7 +50,6 @@ using (var channel = connection.CreateModel())
     consumer.Received += (model, ea) =>
     {
         var message = Encoding.UTF8.GetString(ea.Body);
-        Console.WriteLine(msgNumb + " Received {0}", message);
     };
     channel.BasicConsume("hello", consumer);
 

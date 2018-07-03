@@ -2,15 +2,15 @@
 Reliable Message Oriented Middleware Based on UDP and created with .NET Core 2.0
 
 # Guarantees
-## Message Delivery
-## Order of messages across distributed brokers
-## Eventual Consistency
+* Message Delivery
+* Order of messages across distributed brokers
+* Eventual Consistency
 
 # Development
-## Fail over when a broker goes down in a cluster setup
-## Reconciliation when a broker rejoins a cluster
-## Broker and client auto discovery in a cluster setup
-## Add a new broker without restart of a cluster
+* Fail over when a broker goes down in a cluster setup
+* Reconciliation when a broker rejoins a cluster
+* Broker and client auto discovery in a cluster setup
+* Add a new broker without restart of a cluster
 
 # Nuget
 ## HarakaMQ.Client

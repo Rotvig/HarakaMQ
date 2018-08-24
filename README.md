@@ -57,10 +57,9 @@ using (var channel = connection.CreateModel())
 {
     channel.QueueDeclare("hello");
     var consumer = new DefaultBasicConsumer(channel);
-    var stopWatch = new Stopwatch();
     consumer.Received += (model, ea) =>
     {
-        var message = Encoding.UTF8.GetString(ea.Body);
+        Console.WriteLine(Encoding.UTF8.GetString(ea.Body));
     };
     channel.BasicConsume("hello", consumer);
 

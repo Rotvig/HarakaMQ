@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netcoreapp2.0</TargetFramework>
+    <TargetFramework>netstandard2.0</TargetFramework>
     <Title>HarakaMQ.UDPCommunication</Title>
     <PackageLicenseUrl>https://github.com/Rotvig/HarakaMQ/blob/master/LICENSE</PackageLicenseUrl>
     <PackageProjectUrl>https://github.com/Rotvig/HarakaMQ</PackageProjectUrl>
@@ -15,15 +15,15 @@
     <Authors>René Rotvig Jensen</Authors>
     <Company />
     <Product>HarakaMQ</Product>
+    <Version>1.0.1</Version>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="MessagePack" Version="1.7.2" />
-    <PackageReference Include="SimpleInjector" Version="4.0.12" />
+    <PackageReference Include="MessagePack" Version="1.7.3.4" />
+    <PackageReference Include="SimpleInjector" Version="4.3.0" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\HarakaMQ.DB\HarakaMQ.DB.csproj" />
   </ItemGroup>
-
 </Project>

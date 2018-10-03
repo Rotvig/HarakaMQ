@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netcoreapp2.0</TargetFramework>
+    <TargetFramework>netstandard2.0</TargetFramework>
     <Authors>René Rotvig Jensen</Authors>
     <Title>HarakaMQ.DB</Title>
     <Company />
@@ -14,6 +14,7 @@
     <PackageTags>localstorage db</PackageTags>
     <PackageReleaseNotes>First version of the HarakaMQ.DB.</PackageReleaseNotes>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <Version>1.0.1</Version>
   </PropertyGroup>
 
   <ItemGroup>

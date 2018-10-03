@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netcoreapp2.0</TargetFramework>
+    <TargetFramework>netstandard2.0</TargetFramework>
     <Title>HarakaMQ.UDPCommunication</Title>
     <PackageLicenseUrl>https://github.com/Rotvig/HarakaMQ/blob/master/LICENSE</PackageLicenseUrl>
     <PackageProjectUrl>https://github.com/Rotvig/HarakaMQ</PackageProjectUrl>
@@ -15,6 +15,7 @@
     <Authors>René Rotvig Jensen</Authors>
     <Company />
     <Product>HarakaMQ</Product>
+    <Version>1.0.1</Version>
   </PropertyGroup>
 
   <ItemGroup>
@@ -25,5 +26,15 @@
   <ItemGroup>
     <ProjectReference Include="..\HarakaMQ.DB\HarakaMQ.DB.csproj" />
   </ItemGroup>
+
+  <PropertyGroup Condition="$([System.Text.RegularExpressions.Regex]::IsMatch('$(TargetFramework)', '^net\d'))">
+    <DefineConstants>NETFRAMEWORK</DefineConstants>
+  </PropertyGroup>
+  <PropertyGroup Condition="$([System.Text.RegularExpressions.Regex]::IsMatch('$(TargetFramework)', '^netstandard\d'))">
+    <DefineConstants>NETSTANDARD</DefineConstants>
+  </PropertyGroup>
+  <PropertyGroup Condition="$([System.Text.RegularExpressions.Regex]::IsMatch('$(TargetFramework)', '^netcoreapp\d'))">
+    <DefineConstants>NETCORE</DefineConstants>
+  </PropertyGroup>
 
 </Project>

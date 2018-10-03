@@ -48,7 +48,10 @@ namespace HarakaMQ.UDPCommunication
                 var queue = new ConcurrentQueue<Tuple<string, Message>>();
                 queue.Enqueue(new Tuple<string, Message>(topic, msg));
 
-                _messagesToPacket.TryAdd(ip + ":" + port, queue);
+                if(!_messagesToPacket.ContainsKey(ip + ":" + port))
+                {
+                    _messagesToPacket.Add(ip + ":" + port, queue);
+                }
             }
 
             if (!_taskAlreadyRunning)

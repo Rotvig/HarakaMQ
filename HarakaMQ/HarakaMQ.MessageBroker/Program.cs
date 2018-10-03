@@ -25,7 +25,7 @@ namespace HarakaMQ.MessageBroker
             Debug.WriteLine("Initializing HarakaMQ");
             Setup.Initialize();
             _udpCommunication = Setup.container.GetInstance<IUdpCommunication>();
-            _udpCommunication.SetUpUdpComponent(10, 2000, false, Setup.container.GetInstance<IJsonConfigurator>().GetSettings().Brokers.Select(x => x.Ipadress + x.Port).ToArray());
+            _udpCommunication.SetUpUdpComponent(10, 2000, false, Setup.container.GetInstance<IJsonConfigurator>().GetSettings().Brokers.Select(x => x.Ipaddress + x.Port).ToArray());
             _udpCommunication.QueueDeclare += QueueDeclareMessageRecieved;
             _udpCommunication.PublishPackage += PublishMessageRecieved;
             _udpCommunication.Subscribe += SubsribeMessageRecieved;

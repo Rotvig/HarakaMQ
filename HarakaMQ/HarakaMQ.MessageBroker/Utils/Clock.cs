@@ -43,7 +43,7 @@ namespace HarakaMQ.MessageBroker.Utils
                         Type = SyncType.SyncMessage,
                         TimeStamp = ElapsedTimeSpan()
                     })
-                }, brokerInformation.Ipadress, brokerInformation.Port);
+                }, brokerInformation.Ipaddress, brokerInformation.Port);
         }
 
         public TimeSpan ElapsedTimeSpan()

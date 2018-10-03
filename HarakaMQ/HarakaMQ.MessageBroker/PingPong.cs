@@ -42,7 +42,7 @@ namespace HarakaMQ.MessageBroker
                     Active = true,
                     PrimaryNumber = broker.PrimaryNumber,
                     Port = broker.Port,
-                    Ipadress = broker.Ipadress
+                    Ipaddress = broker.Ipaddress
                 });
         }
 
@@ -66,7 +66,7 @@ namespace HarakaMQ.MessageBroker
         public void AntiEntropyMessageReceived(MessageReceivedEventArgs messageReceivedEventArgs)
         {
             var antiEntropyMessage = MessagePackSerializer.Deserialize<AntiEntropyMessage>(messageReceivedEventArgs.AdministrationMessage.Data);
-            var senderBroker = _brokers.Find(x => x.Ipadress == messageReceivedEventArgs.IpAddress && x.Port == messageReceivedEventArgs.Port);
+            var senderBroker = _brokers.Find(x => x.Ipaddress == messageReceivedEventArgs.IpAddress && x.Port == messageReceivedEventArgs.Port);
             senderBroker.CurrentAntiEntropyRound = antiEntropyMessage.AntiEntropyRound;
             //Todo: remove this
             Console.WriteLine("AntiEntropyMessage " + antiEntropyMessage.AntiEntropyRound);
@@ -168,7 +168,7 @@ namespace HarakaMQ.MessageBroker
                     Primary = _isPrimary ? _jsonConfigurator.GetSettings().PrimaryNumber : 0,
                     AntiEntropyGarbageCollect = _currentAntiEntropyRound % 3 == 0 // GC every third round
                 }));
-                _udpCommunication.SendAdministrationMessage(administrationMessage, broker.Ipadress, broker.Port);
+                _udpCommunication.SendAdministrationMessage(administrationMessage, broker.Ipaddress, broker.Port);
                 Console.WriteLine("Time: " + _clock.ElapsedTimeSpan());
                 //TODO: activate this later on
                 //_schedular.ScheduleTask(Setup.Settings.AntiEntropyMilliseonds, broker.AntiEntropyRoundScheduledTaskIdAnswer, () =>
@@ -195,7 +195,7 @@ namespace HarakaMQ.MessageBroker
                 Subscribers = _antiEntropy.GetSubscribers(),
                 AntiEntropyRound = _currentAntiEntropyRound,
                 Primary = _isPrimary ? _jsonConfigurator.GetSettings().PrimaryNumber : 0
-            })), primaryBroker.Ipadress, primaryBroker.Port);
+            })), primaryBroker.Ipaddress, primaryBroker.Port);
             //StartWaitForPrimaryBroker(primaryBroker);
         }
 

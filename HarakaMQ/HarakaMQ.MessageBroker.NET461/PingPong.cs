@@ -1,18 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using HarakaMQ.MessageBroker.Models;
 using HarakaMQ.MessageBroker.NET461.Interfaces;
+using HarakaMQ.MessageBroker.NET461.Models;
 using HarakaMQ.MessageBroker.NET461.Utils;
-using HarakaMQ.MessageBroker.Utils;
 using HarakaMQ.UDPCommunication.Events;
 using HarakaMQ.UDPCommunication.Interfaces;
 using HarakaMQ.UDPCommunication.Models;
 using MessagePack;
-using IAntiEntropy = HarakaMQ.MessageBroker.Interfaces.IAntiEntropy;
-using IGossip = HarakaMQ.MessageBroker.Interfaces.IGossip;
 
-namespace HarakaMQ.MessageBroker
+namespace HarakaMQ.MessageBroker.NET461
 {
     public class PingPong : IGossip
     {
@@ -29,12 +26,12 @@ namespace HarakaMQ.MessageBroker
         private volatile int _lastAntiEntropyCommit;
         private volatile bool _stopGossip;
 
-        public PingPong(IUdpCommunication udpCommunication, ISchedular schedular, IAntiEntropy antiEntropy, IJsonConfigurator jsonConfigurator, ITimeSyncProtocol timesyncProtocol)
+        public PingPong(IUdpCommunication udpCommunication, ISchedular schedular, IAntiEntropy antiEntropy, IJsonConfigurator jsonConfigurator, ITimeSyncProtocol timeSyncProtocol)
         {
             _schedular = schedular;
             _antiEntropy = antiEntropy;
             _jsonConfigurator = jsonConfigurator;
-            _timeSyncProtocol = timesyncProtocol;
+            _timeSyncProtocol = timeSyncProtocol;
             _udpCommunication = udpCommunication;
 
             _latencyInMs = _jsonConfigurator.GetSettings().AntiEntropyMilliseonds / 10; //Todo: find real latency

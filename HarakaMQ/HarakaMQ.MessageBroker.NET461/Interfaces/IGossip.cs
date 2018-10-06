@@ -1,6 +1,6 @@
 ﻿using HarakaMQ.UDPCommunication.Events;
 
-namespace HarakaMQ.MessageBroker.Interfaces
+namespace HarakaMQ.MessageBroker.NET461.Interfaces
 {
     public interface IGossip : IAntitropyMethods
     {

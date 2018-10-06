@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFramework>netcoreapp2.1</TargetFramework>
+    <TargetFrameworks>netcoreapp2.1</TargetFrameworks>
   </PropertyGroup>
 
   <ItemGroup>
@@ -13,6 +13,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\HarakaMQ.DB\HarakaMQ.DB.csproj" />
+    <ProjectReference Include="..\HarakaMQ.MessageBroker.NET461\HarakaMQ.MessageBroker.NET461.csproj" />
     <ProjectReference Include="..\HarakaMQ.UDPCommunication\HarakaMQ.UDPCommunication.csproj" />
   </ItemGroup>
 

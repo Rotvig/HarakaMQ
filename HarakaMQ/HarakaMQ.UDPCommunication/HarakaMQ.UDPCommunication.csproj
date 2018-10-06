@@ -9,7 +9,6 @@
     <RepositoryUrl>https://github.com/Rotvig/HarakaMQ</RepositoryUrl>
     <RepositoryType>Git</RepositoryType>
     <PackageTags>Middleware, udp, reliability, messagequeue</PackageTags>
-    <PackageReleaseNotes>First version of the HarakaMQ UDPCommunication.</PackageReleaseNotes>
     <Description>HarakaMQ UDPCOmmunication is the base module for communication in the HarakaMQ distributed and reliable message queue.</Description>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <Authors>René Rotvig Jensen</Authors>

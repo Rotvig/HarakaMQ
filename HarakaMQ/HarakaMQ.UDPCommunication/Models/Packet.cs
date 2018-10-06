@@ -46,7 +46,7 @@ namespace HarakaMQ.UDPCommunication.Models
         public int? GlobalSequenceNumber { get; set; }
 
         [Key(7)]
-        public TimeSpan? ReceivedAtBroker { get; set; }
+        public DateTime? ReceivedAtBroker { get; set; }
 
         [Key(8)]
         public int? AntiEntropyRound { get; set; }

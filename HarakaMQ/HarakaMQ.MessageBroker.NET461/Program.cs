@@ -1,12 +1,12 @@
 ﻿using System;
 using System.Diagnostics;
 using System.Linq;
-using HarakaMQ.MessageBroker.Interfaces;
-using HarakaMQ.MessageBroker.Utils;
+using HarakaMQ.MessageBroker.NET461.Interfaces;
+using HarakaMQ.MessageBroker.NET461.Utils;
 using HarakaMQ.UDPCommunication.Events;
 using HarakaMQ.UDPCommunication.Interfaces;
 
-namespace HarakaMQ.MessageBroker
+namespace HarakaMQ.MessageBroker.NET461
 {
     internal class Program
     {

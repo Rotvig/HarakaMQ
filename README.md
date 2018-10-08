@@ -1,5 +1,5 @@
 # HarakaMQ
-Reliable Message Oriented Middleware Based on UDP and created with .NET Core 2.0
+Reliable Message Oriented Middleware Based on UDP
 
 # Guarantees
 * Message Delivery
@@ -19,6 +19,7 @@ https://www.nuget.org/packages/HarakaMQ.Client/
 # Message Broker
 
 Start up the Broker by building the MessageBroker project, and runs it with the command "dotnet HarakaMQ.MessageBroker.dll".
+When running in a cluster setup have a seperate folder with the builded dll's for each broker you have. 
 Remember to add a "settings.json" file in the running directory with this content:
 
 ```json
@@ -30,8 +31,6 @@ Remember to add a "settings.json" file in the running directory with this conten
    "Brokers":[]
 }
 ```
-
-You can also use the pre-builded Message broker (Client-Server setup) from this project https://github.com/Rotvig/HarakaMQ-Benchmark/tree/master/ClientServerSetup/Broker
 
 # Publish
 

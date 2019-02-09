@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using HarakaMQ.MessageBroker.Models;
 using HarakaMQ.MessageBroker.NET461.Interfaces;

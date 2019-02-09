@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using HarakaMQ.MessageBroker;
 using HarakaMQ.UDPCommunication.Events;
+using HarakaMQ.UDPCommunication.Models;
 using Shouldly;
 using Xunit;
 
@@ -70,32 +71,31 @@ namespace HarakaMQ.UnitTesting.HarakaMQ.MessageBroker
             //};
         }
 
-        private static List<MessageReceivedEventArgs> CreateMessagesWithTime(int startTime)
+        private static List<PublishPacketReceivedEventArgs> CreateMessagesWithTime(int startTime)
         {
-            return new List<MessageReceivedEventArgs>()
+            return new List<PublishPacketReceivedEventArgs>()
             {
-                new MessageReceivedEventArgs()
+                new PublishPacketReceivedEventArgs()
                 {
-                    AdministrationMessage = new MessageReceivedEventArgs()
+                    Packet = new Packet
                     {
-
-                        ReceivedAtBroker = TimeSpan.FromMilliseconds(startTime + 1)
+                        ReceivedAtBroker = new DateTime(startTime + 1)
                     }
                 },
-                new MessageReceivedEventArgs()
+                new PublishPacketReceivedEventArgs()
                 {
-                    AdministrationMessage = new Message(Guid.NewGuid())
+                    Packet = new Packet
                     {
-                        ReceivedAtBroker = TimeSpan.FromMilliseconds(startTime + 2)
+                        ReceivedAtBroker = new DateTime(startTime + 2)
                     }
                 },
-                new MessageReceivedEventArgs()
+                new PublishPacketReceivedEventArgs()
                 {
-                    AdministrationMessage = new Message(Guid.NewGuid())
+                    Packet = new Packet
                     {
-                        ReceivedAtBroker = TimeSpan.FromMilliseconds(startTime + 3)
+                        ReceivedAtBroker = new DateTime(startTime + 3)
                     }
-                }
+                },
             };
         }
 
@@ -139,12 +139,12 @@ namespace HarakaMQ.UnitTesting.HarakaMQ.MessageBroker
             var mergeResult = _mergeProcedure.MergeMessages(tentativeMessages1, tentativeMessages2);
 
             mergeResult.Count.ShouldBe(6);
-            //mergeResult[0].Packet.ReceivedAtBroker.ShouldBe(TimeSpan.FromMilliseconds(1));
-            //mergeResult[1].Packet.ReceivedAtBroker.ShouldBe(TimeSpan.FromMilliseconds(2));
-            //mergeResult[2].Packet.ReceivedAtBroker.ShouldBe(TimeSpan.FromMilliseconds(3));
-            //mergeResult[3].Packet.ReceivedAtBroker.ShouldBe(TimeSpan.FromMilliseconds(4));
-            //mergeResult[4].Packet.ReceivedAtBroker.ShouldBe(TimeSpan.FromMilliseconds(5));
-            //mergeResult[5].Packet.ReceivedAtBroker.ShouldBe(TimeSpan.FromMilliseconds(6));
+            mergeResult[0].Packet.ReceivedAtBroker.ShouldBe(new DateTime(1));
+            mergeResult[1].Packet.ReceivedAtBroker.ShouldBe(new DateTime(2));
+            mergeResult[2].Packet.ReceivedAtBroker.ShouldBe(new DateTime(3));
+            mergeResult[3].Packet.ReceivedAtBroker.ShouldBe(new DateTime(4));
+            mergeResult[4].Packet.ReceivedAtBroker.ShouldBe(new DateTime(5));
+            mergeResult[5].Packet.ReceivedAtBroker.ShouldBe(new DateTime(6));
         }
     }
 }

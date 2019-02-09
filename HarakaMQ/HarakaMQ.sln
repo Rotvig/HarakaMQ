@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
-VisualStudioVersion = 15.0.27130.2020
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.28531.58
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HarakaMQ.Client", "HarakaMQ.Client\HarakaMQ.Client.csproj", "{29CC7FCA-E3D3-4386-A324-A7564181C998}"
 EndProject
@@ -17,7 +17,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HarakaMQ.Test.Subscriber", 
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HarakaMQ.MessageBroker.NET461", "HarakaMQ.MessageBroker.NET461\HarakaMQ.MessageBroker.NET461.csproj", "{8AADE486-6D51-4A73-B4B0-76E72C3E48D6}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HarakaMQ.UnitTesting", "HarakaMQ.UnitTesting\HarakaMQ.UnitTesting.csproj", "{6E8BC631-D533-4EBA-B03C-AAAC68371C47}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HarakaMQ.UnitTests", "HarakaMQ.UnitTesting\HarakaMQ.UnitTests.csproj", "{6E8BC631-D533-4EBA-B03C-AAAC68371C47}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

@@ -1,6 +1,4 @@
-﻿using System;
-using HarakaMQ.UDPCommunication.Utils;
-using MessagePack;
+﻿using MessagePack;
 
 namespace HarakaMQ.UDPCommunication.Models
 {

@@ -27,6 +27,7 @@ namespace HarakaMQ.MessageBroker.Utils
             container.Register<IHarakaDb>(() => new HarakaDb("Topics", PublisherCs), Lifestyle.Singleton);
             container.Register<IPersistenceLayer>(() => new PersistenceLayer(container.GetInstance<IHarakaDb>(), "Topics"), Lifestyle.Transient);
             container.Register<IClock, Clock>(Lifestyle.Singleton);
+            container.Register<ITimeSyncProtocol, NTP>(Lifestyle.Singleton);
 
             // 3. Verify your configuration: Only for testing
             container.Verify();

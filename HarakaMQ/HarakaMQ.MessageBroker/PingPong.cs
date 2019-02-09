@@ -2,16 +2,12 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using HarakaMQ.MessageBroker.Interfaces;
 using HarakaMQ.MessageBroker.Models;
-using HarakaMQ.MessageBroker.NET461.Interfaces;
-using HarakaMQ.MessageBroker.NET461.Utils;
-using HarakaMQ.MessageBroker.Utils;
 using HarakaMQ.UDPCommunication.Events;
 using HarakaMQ.UDPCommunication.Interfaces;
 using HarakaMQ.UDPCommunication.Models;
 using MessagePack;
-using IAntiEntropy = HarakaMQ.MessageBroker.Interfaces.IAntiEntropy;
-using IGossip = HarakaMQ.MessageBroker.Interfaces.IGossip;
 
 namespace HarakaMQ.MessageBroker
 {
@@ -37,7 +33,6 @@ namespace HarakaMQ.MessageBroker
             _jsonConfigurator = jsonConfigurator;
             _timeSyncProtocol = timesyncProtocol;
             _udpCommunication = udpCommunication;
-
             _latencyInMs = _jsonConfigurator.GetSettings().AntiEntropyMilliseonds / 10; //Todo: find real latency
 
             foreach (var broker in _jsonConfigurator.GetSettings().Brokers)

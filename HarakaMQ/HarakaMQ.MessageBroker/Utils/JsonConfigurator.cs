@@ -39,7 +39,15 @@ namespace HarakaMQ.MessageBroker.Utils
         /// </summary>
         public void CreateDefaultSettings()
         {
-            File.WriteAllText(AppDomain.CurrentDomain.BaseDirectory + "\\settings.json", JsonConvert.SerializeObject(new Settings {BrokerPort = 11100, PrimaryNumber = 1, AntiEntropyMilliseonds = 200, Brokers = new List<Broker> {new Broker {Name = "Demo secondary cluster broker", Ipaddress = "127.0.0.1", Port = 11102, PrimaryNumber = 2}}}));
+            File.WriteAllText(AppDomain.CurrentDomain.BaseDirectory + "\\settings.json", 
+                JsonConvert.SerializeObject(
+                    new Settings
+                    { BrokerPort = 11100,
+                        PrimaryNumber = 1,
+                        AntiEntropyMilliseonds = 200,
+                        Brokers = new List<Broker> {new Broker {Name = "Demo secondary cluster broker", Ipaddress = "127.0.0.1", Port = 11102, PrimaryNumber = 2}},
+                        TimeSyncServerAddress = "europe.pool.ntp.org",
+                    }));
         }
     }
 

@@ -9,5 +9,6 @@ namespace HarakaMQ.MessageBroker.Models
         public int AntiEntropyMilliseonds { get; set; }
         public bool RunInClusterSetup { get; set; }
         public List<Broker> Brokers { get; set; }
+        public string TimeSyncServerAddress { get; set; }
     }
 }

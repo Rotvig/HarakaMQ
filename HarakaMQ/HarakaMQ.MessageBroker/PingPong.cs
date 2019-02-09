@@ -19,7 +19,7 @@ namespace HarakaMQ.MessageBroker
         private readonly IAntiEntropy _antiEntropy;
         private readonly List<BrokerInformation> _brokers = new List<BrokerInformation>();
         private readonly ITimeSyncProtocol _timeSyncProtocol;
-        private readonly IJsonConfigurator _jsonConfigurator;
+        private readonly Utils.IJsonConfigurator _jsonConfigurator;
         private readonly int _latencyInMs;
         private readonly ISchedular _schedular;
         private readonly IUdpCommunication _udpCommunication;
@@ -29,7 +29,7 @@ namespace HarakaMQ.MessageBroker
         private volatile int _lastAntiEntropyCommit;
         private volatile bool _stopGossip;
 
-        public PingPong(IUdpCommunication udpCommunication, ISchedular schedular, IAntiEntropy antiEntropy, IJsonConfigurator jsonConfigurator, ITimeSyncProtocol timesyncProtocol)
+        public PingPong(IUdpCommunication udpCommunication, ISchedular schedular, IAntiEntropy antiEntropy, Utils.IJsonConfigurator jsonConfigurator, ITimeSyncProtocol timesyncProtocol)
         {
             _schedular = schedular;
             _antiEntropy = antiEntropy;
@@ -58,7 +58,7 @@ namespace HarakaMQ.MessageBroker
         {
             publishPacketReceivedEventArgs.Packet.ReceivedAtBroker = _timeSyncProtocol.GetTime();
             _antiEntropy.PublishMessageReceived(publishPacketReceivedEventArgs);
-            //Debug.WriteLine("Messages Published to Broker - Number: " + message.AdministrationMessage.SeqNo + " Time: " + message.AdministrationMessage.ReceivedAtBroker);
+            Debug.WriteLine("Messages Published to Broker - Number: " + publishPacketReceivedEventArgs.Packet.SeqNo + " Time: " + publishPacketReceivedEventArgs.Packet.ReceivedAtBroker);
         }
 
         public void QueueDeclareMessageReceived(MessageReceivedEventArgs message)

@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using HarakaMQ.MessageBroker.Interfaces;
 using HarakaMQ.UDPCommunication.Events;
@@ -26,7 +27,7 @@ namespace HarakaMQ.MessageBroker
                 committedMessages.Add(messageReceivedEventArgse);
                 foreignTentativeMessages.Remove(messageReceivedEventArgse);
                 ownTentativeMessages.Remove(messageReceivedEventArgse);
-                //Debug.WriteLine("Committed Packet - Number: " + messageReceivedEventArgse.AdministrationMessage.SeqNo + " Time: " + messageReceivedEventArgse.AdministrationMessage.ReceivedAtBroker);
+                Debug.WriteLine("Committed Packet - Number: " + messageReceivedEventArgse.Packet.SeqNo + " Time: " + messageReceivedEventArgse.Packet.ReceivedAtBroker);
             }
             lastAntiEntropyCommit = lastAntiEntropyCommit + 3; //Update 
         }

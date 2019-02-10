@@ -5,7 +5,11 @@ using HarakaMQ.MessageBroker;
 using HarakaMQ.MessageBroker.Interfaces;
 using HarakaMQ.MessageBroker.Models;
 using HarakaMQ.MessageBroker.Utils;
+using HarakaMQ.UDPCommunication.Events;
 using HarakaMQ.UDPCommunication.Interfaces;
+using HarakaMQ.UDPCommunication.Models;
+using MessagePack;
+using Utf8Json;
 using Xunit;
 
 namespace HarakaMQ.UnitTesting.HarakaMQ.MessageBroker
@@ -18,14 +22,10 @@ namespace HarakaMQ.UnitTesting.HarakaMQ.MessageBroker
             _schedular = A.Fake<ISchedular>();
             _antiEntropy = A.Fake<IAntiEntropy>();
             _settings = A.Fake<IJsonConfigurator>();
+            _timeSyncProtocol = A.Fake<ITimeSyncProtocol>();
+
             ConfigureSettings();
-            throw new NotImplementedException();
-
-            //A.CallTo(() => _antiEntropy.GetCommittedMessagesToSend(A<int>._, A<int>._)).Returns(new List<MessageReceivedEventArgs>());
-            //A.CallTo(() => _antiEntropy.GetTentativeMessagesToSendForNonPrimaryBroker(A<int>._, A<int>._)).Returns(new List<MessageReceivedEventArgs>());
-            //A.CallTo(() => _antiEntropy.GetTentativeMessagesToSendForNonPrimaryBroker(A<int>._, A<int>._)).Returns(new List<MessageReceivedEventArgs>());
-
-            //_pingPong = new PingPong(_udpCommunication, _schedular, _antiEntropy, _settings);
+            _pingPong = new PingPong(_udpCommunication, _schedular, _antiEntropy, _settings, _timeSyncProtocol);
         }
 
         private readonly PingPong _pingPong;
@@ -33,6 +33,7 @@ namespace HarakaMQ.UnitTesting.HarakaMQ.MessageBroker
         private readonly ISchedular _schedular;
         private readonly IAntiEntropy _antiEntropy;
         private readonly IJsonConfigurator _settings;
+        private readonly ITimeSyncProtocol _timeSyncProtocol;
 
         private void ConfigureSettings(bool primaryBroker = true)
         {
@@ -56,30 +57,27 @@ namespace HarakaMQ.UnitTesting.HarakaMQ.MessageBroker
         [Fact]
         public void CanHandleReceivedAntiEntropyMessageAsNonPrimaryBroker()
         {
-            throw new NotImplementedException();
-            //ConfigureSettings(false);
-            //var pingPongNonPrimaryBroker = new PingPong(_udpCommunication, _schedular, _antiEntropy, _settings);
-            //var messageReceived = new MessageReceivedEventArgs
-            //{
-            //    Port = 0,
-            //    IpAddress = "foo",
-            //    Packet = new Packet
-            //    {
-            //        Data = JsonSerializer.Serialize(new AntiEntropyMessage
-            //        {
-            //            ClockSync = TimeSpan.FromSeconds(10),
-            //            PrimaryNumber = 1,
-            //            Committed = new List<MessageReceivedEventArgs>(),
-            //            Tentative = new List<MessageReceivedEventArgs>()
-            //        })
-            //    }
-            //};
+            ConfigureSettings(false);
+            var pingPongNonPrimaryBroker = new PingPong(_udpCommunication, _schedular, _antiEntropy, _settings, _timeSyncProtocol);
+            var messageReceived = new MessageReceivedEventArgs
+            {
+                Port = 0,
+                IpAddress = "foo",
+                AdministrationMessage = new AdministrationMessage
+                {
+                    Data = MessagePackSerializer.Serialize(new AntiEntropyMessage
+                    {
+                        PrimaryNumber = 1,
+                        Committed = new List<PublishPacketReceivedEventArgs>(),
+                        Tentative = new List<PublishPacketReceivedEventArgs>()
+                    })
+                }
+            };
 
-            //pingPongNonPrimaryBroker.AntiEntropyMessageReceived(messageReceived);
+            pingPongNonPrimaryBroker.AntiEntropyMessageReceived(messageReceived);
 
-            //pingPongNonPrimaryBroker.Clock.ElapsedTimeSpan.ShouldBeGreaterThanOrEqualTo(TimeSpan.FromSeconds(10));
-            //A.CallTo(() => _antiEntropy.AntiEntropyNonPrimaryMessageReceived(A<AntiEntropyMessage>._)).MustHaveHappened();
-            //A.CallTo(() => _udpCommunication.Send(A<Packet>._, "foo", 0)).MustHaveHappened();
+            A.CallTo(() => _antiEntropy.AntiEntropyNonPrimaryMessageReceived(A<AntiEntropyMessage>._)).MustHaveHappened();
+            A.CallTo(() => _udpCommunication.Send(A<Message>._, "foo")).MustHaveHappened();
         }
 
         [Fact]

@@ -11,7 +11,7 @@ using HarakaMQ.UDPCommunication.Models;
 using Shouldly;
 using Xunit;
 
-namespace HarakaMQ.UnitTesting.HarakaMQ.MessageBroker
+namespace HarakaMQ.UnitTests.HarakaMQ.MessageBroker
 {
     public class AntiEntropyTests
     {

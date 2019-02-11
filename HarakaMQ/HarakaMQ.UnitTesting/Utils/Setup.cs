@@ -1,4 +1,4 @@
-﻿namespace HarakaMQ.UnitTesting.Utils
+﻿namespace HarakaMQ.UnitTests.Utils
 {
     internal static class Setup
     {

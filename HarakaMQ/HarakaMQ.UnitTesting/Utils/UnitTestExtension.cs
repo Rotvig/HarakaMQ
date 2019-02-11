@@ -2,7 +2,7 @@
 using System.IO;
 using HarakaMQ.DB;
 
-namespace HarakaMQ.UnitTesting.Utils
+namespace HarakaMQ.UnitTests.Utils
 {
     public abstract class UnitTestExtension : IDisposable
     {

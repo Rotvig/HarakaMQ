@@ -3,11 +3,11 @@ using System.Linq;
 using HarakaMQ.MessageBroker;
 using HarakaMQ.MessageBroker.Events;
 using HarakaMQ.MessageBroker.Models;
-using HarakaMQ.UnitTesting.Utils;
+using HarakaMQ.UnitTests.Utils;
 using Shouldly;
 using Xunit;
 
-namespace HarakaMQ.UnitTesting.HarakaMQ.MessageBroker
+namespace HarakaMQ.UnitTests.HarakaMQ.MessageBroker
 {
     public class PersistenceLayerTests : UnitTestExtension
     {

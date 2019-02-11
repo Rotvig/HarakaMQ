@@ -4,12 +4,12 @@ using FakeItEasy;
 using HarakaMQ.UDPCommunication;
 using HarakaMQ.UDPCommunication.Interfaces;
 using HarakaMQ.UDPCommunication.Models;
-using HarakaMQ.UnitTesting.Utils;
+using HarakaMQ.UnitTests.Utils;
 using Shouldly;
 using Xunit;
 using Setup = HarakaMQ.UDPCommunication.Utils.Setup;
 
-namespace HarakaMQ.UnitTesting.HarakaMQ.UDPCommunication
+namespace HarakaMQ.UnitTests.HarakaMQ.UDPCommunication
 {
     public class AutomaticRepeatReQuestTests : UnitTestExtension
     {

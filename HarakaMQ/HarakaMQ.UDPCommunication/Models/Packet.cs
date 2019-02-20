@@ -53,5 +53,8 @@ namespace HarakaMQ.UDPCommunication.Models
 
         [Key(9)]
         public string Topic { get; set; }
+        
+        [Key(10)]
+        public int Size { get; set; }
     }
 }

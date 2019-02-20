@@ -28,10 +28,9 @@ namespace HarakaMQ.UDPCommunication
         public void SendMsg(SenderMessage msg, string ip, int port)
         {
             var broadcast = IPAddress.Parse(ip);
-            var sendbuf = MessagePackSerializer.Serialize(msg);
             var ep = new IPEndPoint(broadcast, port);
 
-            _socket.SendTo(sendbuf, ep);
+            _socket.SendTo(MessagePackSerializer.Serialize(msg), ep);
         }
     }
 }

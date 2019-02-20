@@ -12,7 +12,6 @@ namespace HarakaMQ.MessageBroker.Interfaces
         void UpdateLastGlobalSeqNoReceived(int seqNo);
         int GetLastGlobalSeqReceived();
 
-
         event EventHandler<List<Subscriber>> SubscribersHasBeenUpdated;
     }
 }

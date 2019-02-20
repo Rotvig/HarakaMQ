@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using FakeItEasy;
 using HarakaMQ.DB;
 using HarakaMQ.MessageBroker;
@@ -15,6 +16,11 @@ namespace HarakaMQ.UnitTests.HarakaMQ.MessageBroker
 {
     public class AntiEntropyTests
     {
+        private readonly IJsonConfigurator _settings;
+        private readonly IHarakaDb _harakaDb;
+        private readonly IMergeProcedure _mergeProcedure;
+        private AntiEntropy _antiEntropy;
+        
         public AntiEntropyTests()
         {
             _settings = A.Fake<IJsonConfigurator>();
@@ -25,22 +31,18 @@ namespace HarakaMQ.UnitTests.HarakaMQ.MessageBroker
             _antiEntropy = new AntiEntropy(_harakaDb, _mergeProcedure, _settings);
         }
 
-        private readonly IJsonConfigurator _settings;
-        private readonly IHarakaDb _harakaDb;
-        private readonly IMergeProcedure _mergeProcedure;
-        private AntiEntropy _antiEntropy;
-
-        private static List<PublishPacketReceivedEventArgs> CreateTestMessages(int numOfMessages = 10, int offset = 0)
+        private static List<PublishPacketReceivedEventArgs> CreateTestMessages(int numberOfPackets = 1, int totalPacketSizeDevidedBy = 1)
         {
             var messages = new List<PublishPacketReceivedEventArgs>();
 
-            for (var i = 0; i < numOfMessages; i++)
+            for (var i = 0; i < numberOfPackets; i++)
             {
                 messages.Add(new PublishPacketReceivedEventArgs
                 {
                     Packet = new Packet()
                     {
-                        GlobalSequenceNumber = i
+                        GlobalSequenceNumber = i,
+                        Size = Setup.TotalPacketSize / totalPacketSizeDevidedBy
                     }
                 });
             }
@@ -71,13 +73,13 @@ namespace HarakaMQ.UnitTests.HarakaMQ.MessageBroker
         {
             var antiEntropyMessage = new AntiEntropyMessage
             {
-                Committed = CreateTestMessages(5),
+                Committed = CreateTestMessages(5, 5),
                 Tentative = new List<PublishPacketReceivedEventArgs>()
             };
             _antiEntropy.AntiEntropyNonPrimaryMessageReceived(antiEntropyMessage);
 
-            var byteOffSet = 5;
-            var result = _antiEntropy.GetCommittedMessagesToSend(ref byteOffSet, offset: 0);
+            var byteOffSet = 0;
+            var result = _antiEntropy.GetCommittedMessagesToSend(ref byteOffSet, globalSequenceNumberOffset: 0);
 
             result.Count.ShouldBe(5);
             result[0].Packet.GlobalSequenceNumber.ShouldBe(0);
@@ -92,12 +94,12 @@ namespace HarakaMQ.UnitTests.HarakaMQ.MessageBroker
         {
             var antiEntropyMessage = new AntiEntropyMessage
             {
-                Committed = CreateTestMessages(5),
+                Committed = CreateTestMessages(10, 5),
                 Tentative = new List<PublishPacketReceivedEventArgs>()
             };
             _antiEntropy.AntiEntropyNonPrimaryMessageReceived(antiEntropyMessage);
-            var byteOffSet = 5;
-            var resultRound1 = _antiEntropy.GetCommittedMessagesToSend(ref byteOffSet, offset: 0);
+            var byteOffSet = 0;
+            var resultRound1 = _antiEntropy.GetCommittedMessagesToSend(ref byteOffSet, globalSequenceNumberOffset: 0);
 
             resultRound1.Count.ShouldBe(5);
             resultRound1[0].Packet.GlobalSequenceNumber.ShouldBe(0);
@@ -106,7 +108,8 @@ namespace HarakaMQ.UnitTests.HarakaMQ.MessageBroker
             resultRound1[3].Packet.GlobalSequenceNumber.ShouldBe(3);
             resultRound1[4].Packet.GlobalSequenceNumber.ShouldBe(4);
 
-            var resultRound2 = _antiEntropy.GetCommittedMessagesToSend(ref byteOffSet, offset: 5);
+            byteOffSet = 0;
+            var resultRound2 = _antiEntropy.GetCommittedMessagesToSend(ref byteOffSet, globalSequenceNumberOffset: 5);
             resultRound2.Count.ShouldBe(5);
             resultRound2[0].Packet.GlobalSequenceNumber.ShouldBe(5);
             resultRound2[1].Packet.GlobalSequenceNumber.ShouldBe(6);
@@ -114,24 +117,27 @@ namespace HarakaMQ.UnitTests.HarakaMQ.MessageBroker
             resultRound2[3].Packet.GlobalSequenceNumber.ShouldBe(8);
             resultRound2[4].Packet.GlobalSequenceNumber.ShouldBe(9);
 
-            var resultRound3 = _antiEntropy.GetCommittedMessagesToSend(ref byteOffSet, offset: 10);
+            var resultRound3 = _antiEntropy.GetCommittedMessagesToSend(ref byteOffSet, globalSequenceNumberOffset: 10);
             resultRound3.Count.ShouldBe(0);
         }
 
         [Fact]
         public void CanGetTentativeMessagesToSendForNonPrimaryBrokers()
         {
-            throw new NotImplementedException();
+            foreach (var message in CreateTestMessages(5,5))
+            {
+                _antiEntropy.PublishMessageReceived(message);
+            }
+            var byteOffSet = 0;
+            var result = _antiEntropy.GetTentativeMessagesToSendForNonPrimaryBroker(ref byteOffSet, currentAntiEntropyRound: 1);
 
-            //_antiEntropy.OwnTentativeMessages = CreateTestMessages(10, 0, 1);
-            //_antiEntropy.ForeignTentativeMessages = CreateTestMessages(10, 10, 2);
+            result.Count.ShouldBe(5);
+            result.TrueForAll(x => x.Packet.AntiEntropyRound == 1);
 
-            //var result = _antiEntropy.GetTentativeMessagesToSendForNonPrimaryBroker(5, currentAntiEntropyRound: 1);
-
-            //result.Count.ShouldBe(5);
-            //result.TrueForAll(x => x.Packet.AntiEntropyRound == 1 && x.Packet.Broker == 1);
-            //_antiEntropy.OwnTentativeMessages.Count(x => !x.Packet.AntiEntropyRound.HasValue).ShouldBe(5);
-            //_antiEntropy.ForeignTentativeMessages.Count(x => !x.Packet.AntiEntropyRound.HasValue).ShouldBe(10);
+//            _antiEntropy.GetTentativeMessagesToSendForNonPrimaryBroker(ref byteOffSet, 1);
+//            _antiEntropy.GetTentativeMessagesToSendForPrimaryBroker(ref byteOffSet, 1);
+//            _antiEntropy.OwnTentativeMessages.Count(x => !x.Packet.AntiEntropyRound.HasValue).ShouldBe(5);
+//            _antiEntropy.ForeignTentativeMessages.Count(x => !x.Packet.AntiEntropyRound.HasValue).ShouldBe(10);
         }
 
         [Fact]

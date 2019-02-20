@@ -6,13 +6,15 @@ using SimpleInjector;
 
 namespace HarakaMQ.MessageBroker.Utils
 {
-    internal static class Setup
+    public static class Setup
     {
         internal static Container container;
         internal static string PublisherCs = "Publishers";
-        internal static int AntiEntropySize = 300;
+        public static int AntiEntropySize = 300;
+        public static int PacketSize = 65000;
+        public static int TotalPacketSize = PacketSize + AntiEntropySize;
 
-        public static void Initialize()
+        internal static void Initialize()
         {
             // 1. Create a new Simple Injector container
             container = new Container();

@@ -24,8 +24,7 @@ namespace HarakaMQ.UDPCommunication
             {
                 while (_stopListening != true)
                 {
-                    var receivedResults = await udpClient.ReceiveAsync();
-                    EnqueueUdpResult(receivedResults);
+                    EnqueueUdpResult(await udpClient.ReceiveAsync());
                 }
             }
         }

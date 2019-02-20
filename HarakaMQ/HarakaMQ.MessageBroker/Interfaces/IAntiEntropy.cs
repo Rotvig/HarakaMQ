@@ -7,7 +7,7 @@ namespace HarakaMQ.MessageBroker.Interfaces
     public interface IAntiEntropy : IAntitropyMethods
     {
         List<PublishPacketReceivedEventArgs> GetTentativeMessagesToSendForNonPrimaryBroker(ref int numberOfBytesUsed, int currentAntiEntropyRound);
-        List<PublishPacketReceivedEventArgs> GetCommittedMessagesToSend(ref int numberOfBytesUsed, int offset);
+        List<PublishPacketReceivedEventArgs> GetCommittedMessagesToSend(ref int numberOfBytesUsed, int globalSequenceNumberOffset);
         List<PublishPacketReceivedEventArgs> GetTentativeMessagesToSendForPrimaryBroker(ref int numberOfBytesUsed, int currentAntiEntropyRound);
         List<Subscriber> GetSubscribers();
         List<Publisher> GetPublishers();

@@ -14,8 +14,8 @@ namespace HarakaMQ.UDPCommunication.Events
         [Key(2)] public int Port;
 
         [Key(3)] public UdpMessageType Type;
-
-        public UdpMessage UdpMessage;
+        
+        [IgnoreMember]
         public string SenderClient => IpAddress + Port;
     }
 }

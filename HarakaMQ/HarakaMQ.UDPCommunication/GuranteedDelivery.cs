@@ -133,11 +133,12 @@ namespace HarakaMQ.UDPCommunication
                 case UdpMessageType.DelayedAck:
                 case UdpMessageType.Packet:
                     var message = MessagePackSerializer.Deserialize<Packet>(deserializedUdpMessage.Body);
+                    message.Size = deserializedUdpMessage.Body.Length;
+
                     if (_idempotentReceiver.VerifyPacket(message))
                         lock (_harakaDb.GetLock(Setup.IngoingMessagesCS))
                         {
-                            extendedMsg = new ExtendedPacketInformation(message, deserializedUdpMessage.Type,
-                                result.RemoteEndPoint.Address.ToString());
+                            extendedMsg = new ExtendedPacketInformation(message, deserializedUdpMessage.Type, result.RemoteEndPoint.Address.ToString());
                             {
                                 var messages = _harakaDb.GetObjects<ExtendedPacketInformation>(Setup.IngoingMessagesCS);
                                 messages.Add(extendedMsg);

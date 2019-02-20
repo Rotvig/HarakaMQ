@@ -7,7 +7,6 @@ using HarakaMQ.MessageBroker.Models;
 using HarakaMQ.MessageBroker.Utils;
 using HarakaMQ.UDPCommunication.Events;
 using HarakaMQ.UDPCommunication.Interfaces;
-using MessagePack;
 
 namespace HarakaMQ.MessageBroker
 {
@@ -51,12 +50,11 @@ namespace HarakaMQ.MessageBroker
                 {
                     if (messageReceivedEventArgse.Packet.AntiEntropyRound.HasValue) continue;
 
-                    var byteSize = MessagePackSerializer.Serialize(messageReceivedEventArgse).Length;
-                    if (byteSize + numberOfBytesUsed <= Setup.AntiEntropySize + 65000)//Todo: HACK
+                    if (messageReceivedEventArgse.Packet.Size + numberOfBytesUsed <= Setup.TotalPacketSize)
                     {
                         messageReceivedEventArgse.Packet.AntiEntropyRound = currentAntiEntropyRound;
                         tentativeMessagesToSend.Add(messageReceivedEventArgse);
-                        numberOfBytesUsed += byteSize;
+                        numberOfBytesUsed += messageReceivedEventArgse.Packet.Size;
                     }
                     else
                     {
@@ -68,19 +66,18 @@ namespace HarakaMQ.MessageBroker
             return tentativeMessagesToSend;
         }
 
-        public List<PublishPacketReceivedEventArgs> GetCommittedMessagesToSend(ref int numberOfBytesUsed, int offset)
+        public List<PublishPacketReceivedEventArgs> GetCommittedMessagesToSend(ref int numberOfBytesUsed, int globalSequenceNumberOffset)
         {
             //return CommittedMessages.Where(x => x.Packet.GlobalSequenceNumber >= offset && x.Packet.GlobalSequenceNumber < offset + numberOfMessagesToFetch).ToList();
             var committedMessagesToSend = new List<PublishPacketReceivedEventArgs>();
             lock (_messagesLock)
             {
-                foreach (var publishPackageReceivedEventArgse in CommittedMessages.Where(x => x.Packet.GlobalSequenceNumber >= offset))
+                foreach (var publishPackageReceivedEventArgse in CommittedMessages.Where(x => x.Packet.GlobalSequenceNumber >= globalSequenceNumberOffset))
                 {
-                    var byteSize = MessagePackSerializer.Serialize(publishPackageReceivedEventArgse).Length;
-                    if (byteSize + numberOfBytesUsed <= Setup.AntiEntropySize + 65000) //Todo: HACK
+                    if (publishPackageReceivedEventArgse.Packet.Size + numberOfBytesUsed <= Setup.TotalPacketSize)
                     {
                         committedMessagesToSend.Add(publishPackageReceivedEventArgse);
-                        numberOfBytesUsed += byteSize;
+                        numberOfBytesUsed += publishPackageReceivedEventArgse.Packet.Size;
                     }
                     else
                     {
@@ -107,12 +104,11 @@ namespace HarakaMQ.MessageBroker
                 {
                     if (messageReceivedEventArgse.Packet.AntiEntropyRound.HasValue) continue;
 
-                    var byteSize = MessagePackSerializer.Serialize(messageReceivedEventArgse).Length;
-                    if (byteSize + numberOfBytesUsed <= Setup.AntiEntropySize + 65000) //Todo: HACK
+                    if (messageReceivedEventArgse.Packet.Size + numberOfBytesUsed <= Setup.TotalPacketSize)
                     {
                         messageReceivedEventArgse.Packet.AntiEntropyRound = currentAntiEntropyRound;
                         tentativeMessagesToSend.Add(messageReceivedEventArgse);
-                        numberOfBytesUsed += byteSize;
+                        numberOfBytesUsed += messageReceivedEventArgse.Packet.Size;
                     }
                     else
                     {

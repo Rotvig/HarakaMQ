@@ -87,18 +87,12 @@ namespace HarakaMQ.UnitTests.HarakaMQ.MessageBroker
             [Frozen] IMergeProcedure mergeProcedure,
             [Frozen] IJsonConfigurator jsonConfigurator,
             [Frozen] ISmartQueueFactory smartQueueFactory,
-            AntiEntropy sut,
-            SmartQueue smartQueue)
-        {
-            A.CallTo(() => smartQueueFactory.InitializeSmartQueues(A<EventHandler<List<Subscriber>>>.Ignored)).Returns(new List<ISmartQueue>{smartQueue});
-
-            sut.Initialize();
-            ConfigureSettings(jsonConfigurator);
-            
+            AntiEntropy sut)
+        {           
             var antiEntropyMessage = new AntiEntropyMessage
             {
                 Committed = new List<PublishPacketReceivedEventArgs>(),
-                Tentative = CreateTestMessages(5, 5, smartQueue.GetTopicId())
+                Tentative = CreateTestMessages(5, 5)
             };
             A.CallTo(() => mergeProcedure.MergeMessages(A<IEnumerable<PublishPacketReceivedEventArgs>>.Ignored, A<IEnumerable<PublishPacketReceivedEventArgs>>.Ignored)).Returns(antiEntropyMessage.Tentative);
             sut.AntiEntropyNonPrimaryMessageReceived(antiEntropyMessage);
@@ -116,13 +110,8 @@ namespace HarakaMQ.UnitTests.HarakaMQ.MessageBroker
             [Frozen] IMergeProcedure mergeProcedure,
             [Frozen] IJsonConfigurator jsonConfigurator,
             [Frozen] ISmartQueueFactory smartQueueFactory,
-            AntiEntropy sut,
-            SmartQueue smartQueue)
+            AntiEntropy sut)
         {
-            A.CallTo(() => smartQueueFactory.InitializeSmartQueues(A<EventHandler<List<Subscriber>>>.Ignored)).Returns(new List<ISmartQueue>{smartQueue});
-            sut.Initialize();
-            ConfigureSettings(jsonConfigurator);
-    
             var antiEntropyMessage = new AntiEntropyMessage
             {
                 Committed = new List<PublishPacketReceivedEventArgs>(),
@@ -152,79 +141,63 @@ namespace HarakaMQ.UnitTests.HarakaMQ.MessageBroker
             round4.Count.ShouldBe(0);
         }
 
-        [Fact]
-        public void CanGetTentativeMessagesToSendForPrimaryBroker()
+        [Theory, AutoFakeItEasyData]
+        public void CanGetTentativeMessagesToSendForPrimaryBroker(
+            [Frozen] IHarakaDb harakaDb,
+            [Frozen] IMergeProcedure mergeProcedure,
+            [Frozen] IJsonConfigurator jsonConfigurator,
+            [Frozen] ISmartQueueFactory smartQueueFactory,
+            AntiEntropy sut,
+            SmartQueue smartQueue)
         {
-            throw new NotImplementedException();
+            A.CallTo(() => smartQueueFactory.InitializeSmartQueues(A<EventHandler<List<Subscriber>>>.Ignored)).Returns(new List<ISmartQueue>{smartQueue});
+            sut.Initialize();
+            ConfigureSettings(jsonConfigurator);
+            
+            foreach (var message in CreateTestMessages(5,5, smartQueue.GetTopicId()))
+            {
+                sut.PublishMessageReceived(message);
+            }
+            
+            var round1 = sut.GetTentativeMessagesToSendForPrimaryBroker(currentAntiEntropyRound: 1);
 
-            //_antiEntropy.OwnTentativeMessages = CreateTestMessages();
-
-            //var result = _antiEntropy.GetTentativeMessagesToSendForPrimaryBroker(5, currentAntiEntropyRound: 1);
-
-            //result.Count.ShouldBe(5);
-            //result.TrueForAll(x => x.Packet.AntiEntropyRound == 1 && x.Packet.Broker == 1);
-            //_antiEntropy.OwnTentativeMessages.Count(x => !x.Packet.AntiEntropyRound.HasValue).ShouldBe(5);
+            round1.Count.ShouldBe(5);
+            round1.TrueForAll(x => x.Packet.AntiEntropyRound == 1);
+            
+            sut.GetTentativeMessagesToSendForPrimaryBroker(currentAntiEntropyRound: 2).Count.ShouldBe(0);
         }
 
-        [Fact]
-        public void CanGetTentativeMessagesToSendForPrimaryOverMultipleRounds()
+        [Theory, AutoFakeItEasyData]
+        public void CanGetTentativeMessagesToSendForPrimaryOverMultipleRounds(           
+            [Frozen] IHarakaDb harakaDb,
+            [Frozen] IMergeProcedure mergeProcedure,
+            [Frozen] IJsonConfigurator jsonConfigurator,
+            [Frozen] ISmartQueueFactory smartQueueFactory,
+            AntiEntropy sut,
+            SmartQueue smartQueue)
         {
-            throw new NotImplementedException();
+            A.CallTo(() => smartQueueFactory.InitializeSmartQueues(A<EventHandler<List<Subscriber>>>.Ignored)).Returns(new List<ISmartQueue>{smartQueue});
+            sut.Initialize();
+            ConfigureSettings(jsonConfigurator);
+            
+            foreach (var message in CreateTestMessages(15,5, smartQueue.GetTopicId()))
+            {
+                sut.PublishMessageReceived(message);
+            }
+            
+            var round1 = sut.GetTentativeMessagesToSendForPrimaryBroker(currentAntiEntropyRound: 1);
+            round1.Count.ShouldBe(5);
+            round1.TrueForAll(x => x.Packet.AntiEntropyRound == 1);
+            
+            var round2 = sut.GetTentativeMessagesToSendForPrimaryBroker(currentAntiEntropyRound: 2);
+            round2.Count.ShouldBe(5);
+            round2.TrueForAll(x => x.Packet.AntiEntropyRound == 2);
+            
+            var round3 = sut.GetTentativeMessagesToSendForPrimaryBroker(currentAntiEntropyRound: 3);
+            round3.Count.ShouldBe(5);
+            round3.TrueForAll(x => x.Packet.AntiEntropyRound == 3);
 
-            //_antiEntropy.OwnTentativeMessages = CreateTestMessages(30);
-
-            //var round1 = _antiEntropy.GetTentativeMessagesToSendForPrimaryBroker(5, currentAntiEntropyRound: 1);
-
-            //round1.Count.ShouldBe(5);
-            //round1.TrueForAll(x => x.Packet.AntiEntropyRound == 1 && x.Packet.Broker == 1);
-            //_antiEntropy.OwnTentativeMessages.Count(x => x.Packet.AntiEntropyRound == null && x.Packet.Broker == 1).ShouldBe(25);
-
-            //var round2 = _antiEntropy.GetTentativeMessagesToSendForPrimaryBroker(5, currentAntiEntropyRound: 2);
-
-            //round2.Count.ShouldBe(5);
-            //round2.TrueForAll(x => x.Packet.AntiEntropyRound == 2 && x.Packet.Broker == 1);
-            //_antiEntropy.OwnTentativeMessages.Count(x => x.Packet.AntiEntropyRound == null && x.Packet.Broker == 1).ShouldBe(20);
-
-            //var round3 = _antiEntropy.GetTentativeMessagesToSendForPrimaryBroker(20, currentAntiEntropyRound: 3);
-
-            //round3.Count.ShouldBe(20);
-            //round3.TrueForAll(x => x.Packet.AntiEntropyRound == 3 && x.Packet.Broker == 1);
-            //_antiEntropy.OwnTentativeMessages.Count(x => x.Packet.AntiEntropyRound == null && x.Packet.Broker == 1).ShouldBe(0);
-        }
-
-        [Fact]
-        public void CanGetZeroCommittedMessagesToSendIfNoneIsRequsted()
-        {
-            throw new NotImplementedException();
-
-            //_antiEntropy.CommittedMessages = CreateTestMessages(5);
-            //var result = _antiEntropy.GetCommittedMessagesToSend(5, offset: 5);
-
-            //result.Count.ShouldBe(0);
-        }
-
-        [Fact]
-        public void DoesNotGetComittedMessagesIfTHeyAreRequestedBefore()
-        {
-            throw new NotImplementedException();
-            //var messages = new List<MessageReceivedEventArgs>();
-
-            //for (var i = 5; i < 10; i++)
-            //{
-            //    messages.Add(new MessageReceivedEventArgs
-            //    {
-            //        Packet = new Packet()
-            //        {
-            //            Broker = i % 2 == 0 ? 1 : 2,
-            //            GlobalSequenceNumber = i
-            //        }
-            //    });
-            //}
-
-            //_antiEntropy.CommittedMessages = messages;
-            //var result = _antiEntropy.GetCommittedMessagesToSend(5, offset: 0);
-
-            //result.Count.ShouldBe(0);
+            sut.GetTentativeMessagesToSendForPrimaryBroker(currentAntiEntropyRound: 4).Count.ShouldBe(0);
         }
 
         private static List<PublishPacketReceivedEventArgs> CreateTestMessages(int numberOfPackets = 1, int totalPacketSizeDevidedBy = 1, string topic = "test")

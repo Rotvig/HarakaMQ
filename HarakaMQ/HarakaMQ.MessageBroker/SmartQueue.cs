@@ -15,16 +15,10 @@ namespace HarakaMQ.MessageBroker
     {
         private readonly IPersistenceLayer _db;
         private readonly IJsonConfigurator _jsonConfigurator;
-
-        /// <summary>
-        ///     This is no a guranteed updated version of topic, always load from file before use
-        /// </summary>
         private readonly Topic _topic;
-
         private readonly IUdpCommunication _udpComm;
         private Task _eventConsumerTask;
         private bool _stopConsuming;
-
 
         public SmartQueue(IUdpCommunication udpComm, IPersistenceLayer db, IJsonConfigurator jsonConfigurator, Topic topic)
         {

@@ -5,7 +5,7 @@ using HarakaMQ.MessageBroker.Models;
 
 namespace HarakaMQ.MessageBroker.Interfaces
 {
-    internal interface ISmartQueue
+    public interface ISmartQueue
     {
         string GetTopicId();
         void AddEvent(Event @event);

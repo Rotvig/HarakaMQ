@@ -14,31 +14,30 @@ namespace HarakaMQ.MessageBroker
     {
         private readonly IHarakaDb _harakaDb;
         private readonly IJsonConfigurator _jsonConfigurator;
+        private readonly ISmartQueueFactory _smartQueueFactory;
         private readonly IMergeProcedure _mergeProcedure;
         private readonly List<Publisher> _publishers = new List<Publisher>();
-        private readonly List<ISmartQueue> _queues = new List<ISmartQueue>();
+        private List<ISmartQueue> _queues;
         private volatile List<Subscriber> _subscribers = new List<Subscriber>();
-        private List<PublishPacketReceivedEventArgs> CommittedMessages = new List<PublishPacketReceivedEventArgs>();
-        private List<PublishPacketReceivedEventArgs> ForeignTentativeMessages = new List<PublishPacketReceivedEventArgs>();
-        private List<PublishPacketReceivedEventArgs> OwnTentativeMessages = new List<PublishPacketReceivedEventArgs>();
-        private object _messagesLock = new object();
+        private List<PublishPacketReceivedEventArgs> _committedMessages = new List<PublishPacketReceivedEventArgs>();
+        private List<PublishPacketReceivedEventArgs> _foreignTentativeMessages = new List<PublishPacketReceivedEventArgs>();
+        private List<PublishPacketReceivedEventArgs> _ownTentativeMessages = new List<PublishPacketReceivedEventArgs>();
+        private readonly object _messagesLock = new object();
 
-        public AntiEntropy(IHarakaDb harakaDb, IMergeProcedure mergeProcedure, IJsonConfigurator jsonConfigurator)
+        public AntiEntropy(IHarakaDb harakaDb, IMergeProcedure mergeProcedure, IJsonConfigurator jsonConfigurator, ISmartQueueFactory smartQueueFactory)
         {
             _harakaDb = harakaDb;
             _mergeProcedure = mergeProcedure;
             _jsonConfigurator = jsonConfigurator;
-
-            //Initialize all existing queues on startup
-            foreach (var topic in _harakaDb.TryGetObjects<Topic>("Topics"))
-            {
-                var smartQueue = new SmartQueue(Setup.container.GetInstance<IUdpCommunication>(), Setup.container.GetInstance<IPersistenceLayer>(), Setup.container.GetInstance<IJsonConfigurator>(), topic);
-                _queues.Add(smartQueue);
-                smartQueue.SubscribersHasBeenUpdated += SmartQueueOnSubscribersHasBeenUpdated;
-            }
-
+            _smartQueueFactory = smartQueueFactory;
+            Initialize();
             //Fetch all pub
             //Merge tentative
+        }
+
+        public void Initialize()
+        {
+            _queues = _smartQueueFactory.InitializeSmartQueues(SmartQueueOnSubscribersHasBeenUpdated);
         }
 
         public List<PublishPacketReceivedEventArgs> GetTentativeMessagesToSendForNonPrimaryBroker(ref int numberOfBytesUsed, int currentAntiEntropyRound)
@@ -46,7 +45,7 @@ namespace HarakaMQ.MessageBroker
             var tentativeMessagesToSend = new List<PublishPacketReceivedEventArgs>();
             lock (_messagesLock)
             {
-                foreach (var messageReceivedEventArgse in OwnTentativeMessages.Concat(ForeignTentativeMessages))
+                foreach (var messageReceivedEventArgse in _ownTentativeMessages.Concat(_foreignTentativeMessages))
                 {
                     if (messageReceivedEventArgse.Packet.AntiEntropyRound.HasValue) continue;
 
@@ -72,7 +71,7 @@ namespace HarakaMQ.MessageBroker
             var committedMessagesToSend = new List<PublishPacketReceivedEventArgs>();
             lock (_messagesLock)
             {
-                foreach (var publishPackageReceivedEventArgse in CommittedMessages.Where(x => x.Packet.GlobalSequenceNumber >= globalSequenceNumberOffset))
+                foreach (var publishPackageReceivedEventArgse in _committedMessages.Where(x => x.Packet.GlobalSequenceNumber >= globalSequenceNumberOffset))
                 {
                     if (publishPackageReceivedEventArgse.Packet.Size + numberOfBytesUsed <= Setup.TotalPacketSize)
                     {
@@ -100,7 +99,7 @@ namespace HarakaMQ.MessageBroker
             var tentativeMessagesToSend = new List<PublishPacketReceivedEventArgs>();
             lock (_messagesLock)
             {
-                foreach (var messageReceivedEventArgse in OwnTentativeMessages)
+                foreach (var messageReceivedEventArgse in _ownTentativeMessages)
                 {
                     if (messageReceivedEventArgse.Packet.AntiEntropyRound.HasValue) continue;
 
@@ -129,9 +128,9 @@ namespace HarakaMQ.MessageBroker
             //Commit Messages
             lock (_messagesLock)
             {
-                _mergeProcedure.CommitStableMessages(ref CommittedMessages, ref ForeignTentativeMessages, ref OwnTentativeMessages, ref lastAntiEntropyCommit, ref globalSequenceNumber);
+                _mergeProcedure.CommitStableMessages(ref _committedMessages, ref _foreignTentativeMessages, ref _ownTentativeMessages, ref lastAntiEntropyCommit, ref globalSequenceNumber);
             }
-            if (!CommittedMessages.Any()) return;
+            if (!_committedMessages.Any()) return;
 
             foreach (var smartQueue in _queues)
             {
@@ -145,7 +144,7 @@ namespace HarakaMQ.MessageBroker
         {
             lock (_messagesLock)
             {
-                CommittedMessages.RemoveAll(x => x.Packet.GlobalSequenceNumber <= messageGlobalSequenceNumber);
+                _committedMessages.RemoveAll(x => x.Packet.GlobalSequenceNumber <= messageGlobalSequenceNumber);
             }
         }
 
@@ -173,7 +172,7 @@ namespace HarakaMQ.MessageBroker
                 _queues.Find(x => x.GetTopicId() == message.Packet.Topic).AddEvent(new Event(message, EventType.TentativeMessage));
                 lock (_messagesLock)
                 {
-                    OwnTentativeMessages.Add(message);
+                    _ownTentativeMessages.Add(message);
                 }
             }
             else
@@ -181,29 +180,18 @@ namespace HarakaMQ.MessageBroker
                 _queues.Find(x => x.GetTopicId() == message.Packet.Topic).AddEvent(new Event(message, EventType.ComittedMessage));
                 lock (_messagesLock)
                 {
-                    CommittedMessages.Add(message);
+                    _committedMessages.Add(message);
                 }
             }
         }
 
         public void QueueDeclareMessageReceived(MessageReceivedEventArgs message)
         {
-            var topics = _harakaDb.TryGetObjects<Topic>("Topics");
-            var topic = topics.Find(x => x.Name == message.AdministrationMessage.Topic);
-
-            if (topic != null) return;
-
-            lock (_harakaDb.GetLock("Topics"))
+            var createdSmartQueue = _smartQueueFactory.CreateSmartQueue(SmartQueueOnSubscribersHasBeenUpdated, message);
+            if (createdSmartQueue != null)
             {
-                topics = _harakaDb.GetObjects<Topic>("Topics");
-                topic = new Topic(message.AdministrationMessage.Topic);
-                topics.Add(topic);
-                _harakaDb.StoreObject("Topics", topics);
+                _queues.Add(createdSmartQueue);
             }
-
-            var smartQueue = new SmartQueue(Setup.container.GetInstance<IUdpCommunication>(), Setup.container.GetInstance<IPersistenceLayer>(), Setup.container.GetInstance<IJsonConfigurator>(), topic);
-            smartQueue.SubscribersHasBeenUpdated += SmartQueueOnSubscribersHasBeenUpdated;
-            _queues.Add(smartQueue);
         }
 
         public List<Subscriber> GetSubscribers()
@@ -218,7 +206,7 @@ namespace HarakaMQ.MessageBroker
 
         private List<PublishPacketReceivedEventArgs> GetCommittedMessagesForSQ(ISmartQueue smartQueue)
         {
-            return CommittedMessages.Where(x => x.Packet.Topic == smartQueue.GetTopicId() && x.Packet.GlobalSequenceNumber > smartQueue.GetLastGlobalSeqReceived()).ToList();
+            return _committedMessages.Where(x => x.Packet.Topic == smartQueue.GetTopicId() && x.Packet.GlobalSequenceNumber > smartQueue.GetLastGlobalSeqReceived()).ToList();
         }
 
         private void SmartQueueOnSubscribersHasBeenUpdated(object sender, List<Subscriber> subscribers)
@@ -231,7 +219,7 @@ namespace HarakaMQ.MessageBroker
         {
             if (!antiEntropyMessage.Committed.Any()) return;
 
-            CommittedMessages.AddRange(antiEntropyMessage.Committed);
+            _committedMessages.AddRange(antiEntropyMessage.Committed);
             foreach (var smartQueue in _queues)
                 smartQueue.AddEvent(new Event(GetCommittedMessagesForSQ(smartQueue), EventType.ComittedMessages));
         }
@@ -241,12 +229,12 @@ namespace HarakaMQ.MessageBroker
             if (!antiEntropyMessage.Tentative.Any()) return;
             lock (_messagesLock)
             {
-                ForeignTentativeMessages = _mergeProcedure.MergeMessages(antiEntropyMessage.Tentative, ForeignTentativeMessages);
+                _foreignTentativeMessages = _mergeProcedure.MergeMessages(antiEntropyMessage.Tentative, _foreignTentativeMessages);
             }
 
             foreach (var smartQueue in _queues)
             {
-                smartQueue.AddEvent(new Event(ForeignTentativeMessages.Where(x => x.Packet.Topic == smartQueue.GetTopicId()).ToList(), EventType.TentativeMessages));
+                smartQueue.AddEvent(new Event(_foreignTentativeMessages.Where(x => x.Packet.Topic == smartQueue.GetTopicId()).ToList(), EventType.TentativeMessages));
                 smartQueue.AddEvent(new Event(antiEntropyMessage.Subscribers, EventType.AddSubscribers));
             }
         }

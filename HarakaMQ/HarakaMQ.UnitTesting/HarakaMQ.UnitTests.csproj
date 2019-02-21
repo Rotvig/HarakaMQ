@@ -9,10 +9,9 @@
   <ItemGroup>
     <PackageReference Include="AutoFixture.AutoFakeItEasy" Version="4.8.0" />
     <PackageReference Include="AutoFixture.Xunit2" Version="4.8.0" />
-    <PackageReference Include="FakeItEasy" Version="4.9.0" />
-    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="15.3.0" />
-    <PackageReference Include="Shouldly" Version="2.8.3" />
-    <PackageReference Include="Utf8Json" Version="1.3.1" />
+    <PackageReference Include="FakeItEasy" Version="5.1.0" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.0.0-preview-20190203-03" />
+    <PackageReference Include="Shouldly" Version="4.0.0-beta0001" />
     <PackageReference Include="xunit" Version="2.2.0" />
     <PackageReference Include="xunit.runner.visualstudio" Version="2.2.0" />
   </ItemGroup>

@@ -180,11 +180,10 @@ namespace HarakaMQ.MessageBroker
             _currentAntiEntropyRound = antiEntropyMessage.AntiEntropyRound;
             var primaryBroker = _brokers.Find(x => x.PrimaryNumber == antiEntropyMessage.PrimaryNumber);
 
-            var numberOfBytesUsed = 0;
             _udpCommunication.SendAdministrationMessage(new AdministrationMessage(MessageType.AntiEntropy, MessagePackSerializer.Serialize(new AntiEntropyMessage
             {
                 PrimaryNumber = _jsonConfigurator.GetSettings().PrimaryNumber,
-                Tentative = _antiEntropy.GetTentativeMessagesToSendForPrimaryBroker(ref numberOfBytesUsed, _currentAntiEntropyRound),
+                Tentative = _antiEntropy.GetTentativeMessagesToSendForPrimaryBroker(_currentAntiEntropyRound),
                 Publishers = _antiEntropy.GetPublishers(),
                 Subscribers = _antiEntropy.GetSubscribers(),
                 AntiEntropyRound = _currentAntiEntropyRound,

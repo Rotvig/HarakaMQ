@@ -1,5 +1,6 @@
 using HarakaMQ.DB;
 using HarakaMQ.MessageBroker.Interfaces;
+using HarakaMQ.MessageBroker.Models;
 using HarakaMQ.UDPCommunication;
 using HarakaMQ.UDPCommunication.Interfaces;
 using SimpleInjector;
@@ -20,6 +21,7 @@ namespace HarakaMQ.MessageBroker.Utils
             container = new Container();
 
             // 2. Configure the container (register)
+            container.Register<ISmartQueueFactory, SmartQueueFactory>(Lifestyle.Singleton);
             container.Register<IJsonConfigurator, JsonConfigurator>(Lifestyle.Singleton);
             container.Register<IUdpCommunication, UdpCommunication>(Lifestyle.Singleton);
             container.Register<IMergeProcedure, MergeProcedure>(Lifestyle.Singleton);
@@ -27,7 +29,7 @@ namespace HarakaMQ.MessageBroker.Utils
             container.Register<IAntiEntropy, AntiEntropy>(Lifestyle.Singleton);
             container.Register<IGossip, PingPong>(Lifestyle.Singleton);
             container.Register<IHarakaDb>(() => new HarakaDb("Topics", PublisherCs), Lifestyle.Singleton);
-            container.Register<IPersistenceLayer>(() => new PersistenceLayer(container.GetInstance<IHarakaDb>(), "Topics"), Lifestyle.Transient);
+            container.Register<IPersistenceLayer>(() => new PersistenceLayer(container.GetInstance<IHarakaDb>(), "Topics"), Lifestyle.Singleton);
             container.Register<IClock, Clock>(Lifestyle.Singleton);
             container.Register<ITimeSyncProtocol, NTP>(Lifestyle.Singleton);
 

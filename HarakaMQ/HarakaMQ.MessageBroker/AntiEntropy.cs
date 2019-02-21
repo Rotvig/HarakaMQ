@@ -67,16 +67,15 @@ namespace HarakaMQ.MessageBroker
 
         public List<PublishPacketReceivedEventArgs> GetCommittedMessagesToSend(ref int numberOfBytesUsed, int globalSequenceNumberOffset)
         {
-            //return CommittedMessages.Where(x => x.Packet.GlobalSequenceNumber >= offset && x.Packet.GlobalSequenceNumber < offset + numberOfMessagesToFetch).ToList();
             var committedMessagesToSend = new List<PublishPacketReceivedEventArgs>();
             lock (_messagesLock)
             {
-                foreach (var publishPackageReceivedEventArgse in _committedMessages.Where(x => x.Packet.GlobalSequenceNumber >= globalSequenceNumberOffset))
+                foreach (var publishPackageReceivedEventArgs in _committedMessages.Where(x => x.Packet.GlobalSequenceNumber >= globalSequenceNumberOffset))
                 {
-                    if (publishPackageReceivedEventArgse.Packet.Size + numberOfBytesUsed <= Setup.TotalPacketSize)
+                    if (publishPackageReceivedEventArgs.Packet.Size + numberOfBytesUsed <= Setup.TotalPacketSize)
                     {
-                        committedMessagesToSend.Add(publishPackageReceivedEventArgse);
-                        numberOfBytesUsed += publishPackageReceivedEventArgse.Packet.Size;
+                        committedMessagesToSend.Add(publishPackageReceivedEventArgs);
+                        numberOfBytesUsed += publishPackageReceivedEventArgs.Packet.Size;
                     }
                     else
                     {
@@ -94,20 +93,21 @@ namespace HarakaMQ.MessageBroker
             MergeCommittedMessagesAndPassThemToSmartQueues(message);
         }
 
-        public List<PublishPacketReceivedEventArgs> GetTentativeMessagesToSendForPrimaryBroker(ref int numberOfBytesUsed, int currentAntiEntropyRound)
+        public List<PublishPacketReceivedEventArgs> GetTentativeMessagesToSendForPrimaryBroker(int currentAntiEntropyRound)
         {
             var tentativeMessagesToSend = new List<PublishPacketReceivedEventArgs>();
+            var numberOfBytesUsed = 0;
             lock (_messagesLock)
             {
-                foreach (var messageReceivedEventArgse in _ownTentativeMessages)
+                foreach (var messageReceivedEventArgs in _ownTentativeMessages)
                 {
-                    if (messageReceivedEventArgse.Packet.AntiEntropyRound.HasValue) continue;
+                    if (messageReceivedEventArgs.Packet.AntiEntropyRound.HasValue) continue;
 
-                    if (messageReceivedEventArgse.Packet.Size + numberOfBytesUsed <= Setup.TotalPacketSize)
+                    if (messageReceivedEventArgs.Packet.Size + numberOfBytesUsed <= Setup.TotalPacketSize)
                     {
-                        messageReceivedEventArgse.Packet.AntiEntropyRound = currentAntiEntropyRound;
-                        tentativeMessagesToSend.Add(messageReceivedEventArgse);
-                        numberOfBytesUsed += messageReceivedEventArgse.Packet.Size;
+                        messageReceivedEventArgs.Packet.AntiEntropyRound = currentAntiEntropyRound;
+                        tentativeMessagesToSend.Add(messageReceivedEventArgs);
+                        numberOfBytesUsed += messageReceivedEventArgs.Packet.Size;
                     }
                     else
                     {

@@ -8,7 +8,7 @@ namespace HarakaMQ.MessageBroker
 {
     public class MergeProcedure : IMergeProcedure
     {
-        public List<PublishPacketReceivedEventArgs> MergeMessages(List<PublishPacketReceivedEventArgs> tentativMessages1, List<PublishPacketReceivedEventArgs> tentativMessages2)
+        public List<PublishPacketReceivedEventArgs> MergeMessages(IEnumerable<PublishPacketReceivedEventArgs> tentativMessages1, IEnumerable<PublishPacketReceivedEventArgs> tentativMessages2)
         {
             //MERGE TENTATIVE MESSAGES and return new merged list
             return tentativMessages1.Concat(tentativMessages2).OrderBy(x => x.Packet.ReceivedAtBroker.Value).ToList();

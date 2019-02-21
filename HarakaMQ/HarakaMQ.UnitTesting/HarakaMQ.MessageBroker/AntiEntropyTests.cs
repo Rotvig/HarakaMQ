@@ -91,13 +91,18 @@ namespace HarakaMQ.UnitTests.HarakaMQ.MessageBroker
             SmartQueue smartQueue)
         {
             A.CallTo(() => smartQueueFactory.InitializeSmartQueues(A<EventHandler<List<Subscriber>>>.Ignored)).Returns(new List<ISmartQueue>{smartQueue});
+
             sut.Initialize();
             ConfigureSettings(jsonConfigurator);
-            foreach (var message in CreateTestMessages(5,5, smartQueue.GetTopicId()))
-            {
-                sut.PublishMessageReceived(message);
-            }
             
+            var antiEntropyMessage = new AntiEntropyMessage
+            {
+                Committed = new List<PublishPacketReceivedEventArgs>(),
+                Tentative = CreateTestMessages(5, 5, smartQueue.GetTopicId())
+            };
+            A.CallTo(() => mergeProcedure.MergeMessages(A<IEnumerable<PublishPacketReceivedEventArgs>>.Ignored, A<IEnumerable<PublishPacketReceivedEventArgs>>.Ignored)).Returns(antiEntropyMessage.Tentative);
+            sut.AntiEntropyNonPrimaryMessageReceived(antiEntropyMessage);
+
             var byteOffSet = 0;
             var result = sut.GetTentativeMessagesToSendForNonPrimaryBroker(ref byteOffSet, currentAntiEntropyRound: 1);
 
@@ -105,35 +110,46 @@ namespace HarakaMQ.UnitTests.HarakaMQ.MessageBroker
             result.TrueForAll(x => x.Packet.AntiEntropyRound == 1);
         }
 
-        [Fact]
-        public void CanGetTentativeMessagesToSendForNonPrimaryBrokersOverMultipleRounds()
+        [Theory, AutoFakeItEasyData]
+        public void CanGetTentativeMessagesToSendForNonPrimaryBrokersOverMultipleRounds(
+            [Frozen] IHarakaDb harakaDb,
+            [Frozen] IMergeProcedure mergeProcedure,
+            [Frozen] IJsonConfigurator jsonConfigurator,
+            [Frozen] ISmartQueueFactory smartQueueFactory,
+            AntiEntropy sut,
+            SmartQueue smartQueue)
         {
-            throw new NotImplementedException();
-
-            //_antiEntropy.OwnTentativeMessages = CreateTestMessages(15, 0, 1);
-            //_antiEntropy.ForeignTentativeMessages = CreateTestMessages(15, 15, 2);
-
-            //var round1 = _antiEntropy.GetTentativeMessagesToSendForNonPrimaryBroker(5, currentAntiEntropyRound: 1);
-
-            //round1.Count.ShouldBe(5);
-            //round1.TrueForAll(x => x.Packet.AntiEntropyRound == 1 && x.Packet.Broker == 1);
-            //_antiEntropy.OwnTentativeMessages.Count(x => !x.Packet.AntiEntropyRound.HasValue).ShouldBe(10);
-            //_antiEntropy.ForeignTentativeMessages.Count(x => !x.Packet.AntiEntropyRound.HasValue).ShouldBe(15);
-
-            //var round2 = _antiEntropy.GetTentativeMessagesToSendForNonPrimaryBroker(15, currentAntiEntropyRound: 2);
-
-            //round2.Count.ShouldBe(15);
-            //round2.TrueForAll(x => x.Packet.AntiEntropyRound == 2 && x.Packet.Broker == 1);
-            //_antiEntropy.OwnTentativeMessages.Count(x => !x.Packet.AntiEntropyRound.HasValue).ShouldBe(0);
-            //_antiEntropy.ForeignTentativeMessages.Count(x => !x.Packet.AntiEntropyRound.HasValue).ShouldBe(10);
-
-
-            //var round3 = _antiEntropy.GetTentativeMessagesToSendForNonPrimaryBroker(10, currentAntiEntropyRound: 3);
-
-            //round3.Count.ShouldBe(10);
-            //round3.TrueForAll(x => x.Packet.AntiEntropyRound == 3 && x.Packet.Broker == 1);
-            //_antiEntropy.OwnTentativeMessages.Count(x => !x.Packet.AntiEntropyRound.HasValue).ShouldBe(0);
-            //_antiEntropy.ForeignTentativeMessages.Count(x => !x.Packet.AntiEntropyRound.HasValue).ShouldBe(0);
+            A.CallTo(() => smartQueueFactory.InitializeSmartQueues(A<EventHandler<List<Subscriber>>>.Ignored)).Returns(new List<ISmartQueue>{smartQueue});
+            sut.Initialize();
+            ConfigureSettings(jsonConfigurator);
+    
+            var antiEntropyMessage = new AntiEntropyMessage
+            {
+                Committed = new List<PublishPacketReceivedEventArgs>(),
+                Tentative = CreateTestMessages(15, 5)
+            };
+            A.CallTo(() => mergeProcedure.MergeMessages(A<IEnumerable<PublishPacketReceivedEventArgs>>.Ignored, A<IEnumerable<PublishPacketReceivedEventArgs>>.Ignored)).Returns(antiEntropyMessage.Tentative);
+            sut.AntiEntropyNonPrimaryMessageReceived(antiEntropyMessage);
+            
+            var byteOffSet = 0;
+            
+            var round1 = sut.GetTentativeMessagesToSendForNonPrimaryBroker(ref byteOffSet, currentAntiEntropyRound: 1);
+            round1.Count.ShouldBe(5);
+            round1.TrueForAll(x => x.Packet.AntiEntropyRound == 1);
+            
+            byteOffSet = 0;
+            var round2 = sut.GetTentativeMessagesToSendForNonPrimaryBroker(ref byteOffSet, currentAntiEntropyRound: 2);
+            round2.Count.ShouldBe(5);
+            round2.TrueForAll(x => x.Packet.AntiEntropyRound == 2);
+            
+            byteOffSet = 0;
+            var round3 = sut.GetTentativeMessagesToSendForNonPrimaryBroker(ref byteOffSet, currentAntiEntropyRound: 3);
+            round3.Count.ShouldBe(5);
+            round3.TrueForAll(x => x.Packet.AntiEntropyRound == 3);
+            
+            byteOffSet = 0;
+            var round4 = sut.GetTentativeMessagesToSendForNonPrimaryBroker(ref byteOffSet, currentAntiEntropyRound: 4);
+            round4.Count.ShouldBe(0);
         }
 
         [Fact]

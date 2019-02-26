@@ -18,14 +18,14 @@ namespace HarakaMQ.UDPCommunication
         private readonly IHarakaDb _harakaDb;
         private readonly Dictionary<string, ConcurrentQueue<Tuple<string, Message>>> _messagesToPacket;
         private readonly ISchedular _schedular;
-        public readonly Dictionary<string, SortedList<int, ExtendedPacketInformation>> DictionaryWithSortedMessages;
+        private readonly Dictionary<string, SortedList<int, ExtendedPacketInformation>> _sortedReceivedMessages;
 
         public AutomaticRepeatReQuest(IGuranteedDelivery guranteedDelivery, ISchedular schedular, IHarakaDb harakaDb)
         {
             _guranteedDelivery = guranteedDelivery;
             _schedular = schedular;
             _harakaDb = harakaDb;
-            DictionaryWithSortedMessages = new Dictionary<string, SortedList<int, ExtendedPacketInformation>>();
+            _sortedReceivedMessages = new Dictionary<string, SortedList<int, ExtendedPacketInformation>>();
             _messagesToPacket = new Dictionary<string, ConcurrentQueue<Tuple<string, Message>>>();
         }
 
@@ -266,8 +266,8 @@ namespace HarakaMQ.UDPCommunication
             var packetsToPublish = new Queue<ExtendedPacketInformation>();
             var client = GetClient(receivedPacket.Ip, receivedPacket.Packet.ReturnPort);
             //Add Client to dictionary if it does not exist
-            if (!DictionaryWithSortedMessages.ContainsKey(client.Id))
-                DictionaryWithSortedMessages.Add(client.Id, new SortedList<int, ExtendedPacketInformation>());
+            if (!_sortedReceivedMessages.ContainsKey(client.Id))
+                _sortedReceivedMessages.Add(client.Id, new SortedList<int, ExtendedPacketInformation>());
 
             if (client.IngoingSeqNo + 1 == receivedPacket.Packet.SeqNo) // +1 because ingoingSeqNo represents the last recieved
             {
@@ -275,7 +275,7 @@ namespace HarakaMQ.UDPCommunication
             }
             else
             {
-                DictionaryWithSortedMessages[receivedPacket.SenderClient].Add(receivedPacket.Packet.SeqNo, receivedPacket);
+                _sortedReceivedMessages[receivedPacket.SenderClient].Add(receivedPacket.Packet.SeqNo, receivedPacket);
                 _schedular.ScheduleRecurringResend(100, receivedPacket.Ip, receivedPacket.Port, client.IngoingSeqNo + 1, SendResendRequest);
             }
             return packetsToPublish;
@@ -284,16 +284,16 @@ namespace HarakaMQ.UDPCommunication
         private void GetSortedPacketsInOrder(ExtendedPacketInformation receivedPacket, Queue<ExtendedPacketInformation> packetsToPublish)
         {
             packetsToPublish.Enqueue(receivedPacket);
-            var count = DictionaryWithSortedMessages[receivedPacket.SenderClient].Count;
+            var count = _sortedReceivedMessages[receivedPacket.SenderClient].Count;
             for (var i = 0; i < count; i++)
                 //Find The next message inorder
                 // It is always Keys[0] because it has the lowest seqNo always, it will adjsut when elements on the list gets removed.
                 // It is receivedPacket.Packet.SeqNo + i + 1. Example: ingoing message is 4, now we have to find 5 = 4 + 0 + 1 = 5
-                if (DictionaryWithSortedMessages[receivedPacket.SenderClient].Keys[0] == receivedPacket.Packet.SeqNo + i + 1)
+                if (_sortedReceivedMessages[receivedPacket.SenderClient].Keys[0] == receivedPacket.Packet.SeqNo + i + 1)
                 {
-                    packetsToPublish.Enqueue(DictionaryWithSortedMessages[receivedPacket.SenderClient].Values[0]);
+                    packetsToPublish.Enqueue(_sortedReceivedMessages[receivedPacket.SenderClient].Values[0]);
                     //Remove the message from the sorted list
-                    DictionaryWithSortedMessages[receivedPacket.SenderClient].Remove(DictionaryWithSortedMessages[receivedPacket.SenderClient].Keys[0]);
+                    _sortedReceivedMessages[receivedPacket.SenderClient].Remove(_sortedReceivedMessages[receivedPacket.SenderClient].Keys[0]);
                 }
                 //Messages are not in order anymore then stop iterating
                 else

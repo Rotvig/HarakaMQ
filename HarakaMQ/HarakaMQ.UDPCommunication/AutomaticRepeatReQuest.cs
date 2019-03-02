@@ -168,17 +168,17 @@ namespace HarakaMQ.UDPCommunication
             //Debug.WriteLine("ClientId :" + Setup.ClientId + " Delayed Ack send at msg num: " + msg.SeqNo);
         }
 
-        private void OnMessageReceived(object sender, ExtendedPacketInformation e)
+        private async void OnMessageReceived(object sender, ExtendedPacketInformation e)
         {
-            HandleRecievedMessage(e);
+            await HandleRecievedMessage(e);
         }
 
-        public void HandleRecievedMessage(ExtendedPacketInformation receivedPacket)
+        public async Task HandleRecievedMessage(ExtendedPacketInformation receivedPacket)
         {
             switch (receivedPacket.UdpMessageType)
             {
                 case UdpMessageType.Packet:
-                    HandleMessage(receivedPacket);
+                    await HandleMessage(receivedPacket);
                     break;
                 case UdpMessageType.DelayedAckResponse:
                     _schedular.CancelTask(receivedPacket.UdpMessage.MessageId.Value);
@@ -200,7 +200,7 @@ namespace HarakaMQ.UDPCommunication
                     {
                         //OutOfOrder
                         SendDelayedAckResponse(receivedPacket, false);
-                        HandleMessage(receivedPacket);
+                        await HandleMessage(receivedPacket);
                     }
                     break;
                 case UdpMessageType.GarbageCollect:
@@ -212,7 +212,7 @@ namespace HarakaMQ.UDPCommunication
         }
 
 
-        private void HandleMessage(ExtendedPacketInformation receivedPacket)
+        private async Task HandleMessage(ExtendedPacketInformation receivedPacket)
         {
             //Cancel any recurring resendrequests
             //Todo: Cancel task based on clintid and seqno
@@ -234,7 +234,7 @@ namespace HarakaMQ.UDPCommunication
                 {
                     //Send garbagecollect mesage
                     SendGarbageCollectMessage(extendedPacketInformation);
-                    RemoveFromReceiveQueueAndUpdateSeqNo(receivedPacket, extendedPacketInformation);
+                    await RemoveFromReceiveQueueAndUpdateSeqNo(receivedPacket, extendedPacketInformation);
                     //Dont publish the delayedAck
                     continue;
                 }
@@ -249,14 +249,14 @@ namespace HarakaMQ.UDPCommunication
                 else
                     PublishPacketToApplicationLayer(new PublishPacketReceivedEventArgs {Packet = extendedPacketInformation.Packet, Port = extendedPacketInformation.Packet.ReturnPort, IpAddress = extendedPacketInformation.Ip});
 
-                RemoveFromReceiveQueueAndUpdateSeqNo(receivedPacket, extendedPacketInformation);
+                await RemoveFromReceiveQueueAndUpdateSeqNo(receivedPacket, extendedPacketInformation);
             }
         }
 
-        private void RemoveFromReceiveQueueAndUpdateSeqNo(ExtendedPacketInformation receivedPacket, ExtendedPacketInformation extendedPacketInformation)
+        private async Task RemoveFromReceiveQueueAndUpdateSeqNo(ExtendedPacketInformation receivedPacket, ExtendedPacketInformation extendedPacketInformation)
         {
             //Remove Packet from Recieve Queue
-            _guranteedDelivery.RemoveMessageFromReceiveQueueAsync(extendedPacketInformation.Id).Start();
+            await _guranteedDelivery.RemoveMessageFromReceiveQueueAsync(extendedPacketInformation.Id);
             //Update Client
             UpdateIngoingSequence(receivedPacket.SenderClient, extendedPacketInformation.Packet.SeqNo);
         }

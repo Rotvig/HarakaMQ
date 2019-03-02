@@ -33,7 +33,7 @@ namespace HarakaMQ.UnitTests.Utils
     
     public class ExtendedPacketInformationSpecimenBuilder : ISpecimenBuilder
     {
-        private static int _seqNo;
+        private int _seqNo;
         public object Create(object request, ISpecimenContext context)
         {
             if (!(request is ParameterInfo pi))

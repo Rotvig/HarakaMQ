@@ -15,8 +15,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HarakaMQ.Test.Publisher", "
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HarakaMQ.Test.Subscriber", "HarakaMQ.Test.Subscriber\HarakaMQ.Test.Subscriber.csproj", "{7EB884D0-D733-49F3-838C-A4379EB198C3}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HarakaMQ.MessageBroker.NET461", "HarakaMQ.MessageBroker.NET461\HarakaMQ.MessageBroker.NET461.csproj", "{8AADE486-6D51-4A73-B4B0-76E72C3E48D6}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HarakaMQ.UnitTests", "HarakaMQ.UnitTesting\HarakaMQ.UnitTests.csproj", "{6E8BC631-D533-4EBA-B03C-AAAC68371C47}"
 EndProject
 Global
@@ -49,10 +47,6 @@ Global
 		{7EB884D0-D733-49F3-838C-A4379EB198C3}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{7EB884D0-D733-49F3-838C-A4379EB198C3}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{7EB884D0-D733-49F3-838C-A4379EB198C3}.Release|Any CPU.Build.0 = Release|Any CPU
-		{8AADE486-6D51-4A73-B4B0-76E72C3E48D6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{8AADE486-6D51-4A73-B4B0-76E72C3E48D6}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{8AADE486-6D51-4A73-B4B0-76E72C3E48D6}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{8AADE486-6D51-4A73-B4B0-76E72C3E48D6}.Release|Any CPU.Build.0 = Release|Any CPU
 		{6E8BC631-D533-4EBA-B03C-AAAC68371C47}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{6E8BC631-D533-4EBA-B03C-AAAC68371C47}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{6E8BC631-D533-4EBA-B03C-AAAC68371C47}.Release|Any CPU.ActiveCfg = Release|Any CPU

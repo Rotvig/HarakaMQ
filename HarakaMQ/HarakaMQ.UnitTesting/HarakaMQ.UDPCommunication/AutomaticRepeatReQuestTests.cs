@@ -94,7 +94,6 @@ namespace HarakaMQ.UnitTests.HarakaMQ.UDPCommunication
             client.IngoingSeqNo.ShouldBe(7);
         }
 
-
         [Theory, AutoFakeItEasyDataAttributeWithExtendedPacketInformationSpecimenBuilder]
         public async void CanHandleRecievedMessageOfTypeMessageOutOfOrder(
             [Frozen] IGuranteedDelivery guranteedDelivery,
@@ -110,79 +109,20 @@ namespace HarakaMQ.UnitTests.HarakaMQ.UDPCommunication
             A.CallTo(() => guranteedDelivery.RemoveMessageFromReceiveQueueAsync(extendedPacketInformation.Id)).MustNotHaveHappened();
         }
 
-        [Fact]
-        public void CanHandleRecievedMessageSyncMessage()
+        [Theory, AutoFakeItEasyData]
+        public async void CanSendMessage(
+            [Frozen] IGuranteedDelivery guranteedDelivery,
+            [Frozen] ISchedular schedular,
+            [Frozen] IHarakaDb harakaDb,
+            AutomaticRepeatReQuest sut,
+            Client client,
+            Message message)
         {
-            //Setup.AckAfterNumber = 50;
-            //var client = new Client { Ip = "foo", Port = 1 };
-            //client.SetIngoingSeqNo(0);
-            //HarakaDb.StoreObject(_clients, new List<Client> { client });
+            A.CallTo(() => harakaDb.GetObjects<Client>(A<string>.Ignored)).Returns(new List<Client> {client});
 
-            //var extendedMessageInformation = new ExtendedPacketInformation();
-            //extendedMessageInformation.SetUdpMessageType(UdpMessageType.Packet);
-            //var message = new AdministrationMessage();
-            //message.SetAsSynMessage();
-            //message.SetSeqNo(42);
-            //message.SetReturnPort(client.Port);
-            //extendedMessageInformation.Ip = client.Ip;
-            //extendedMessageInformation.Port = client.Port;
-            //extendedMessageInformation.SetMessage(message);
-            //_automaticRepeatReQuest.HandleRecievedMessage(extendedMessageInformation);
+           await sut.Send(message, client.Ip, client.Port, "topic");
 
-            //A.CallTo(() => _guranteedDelivery.RemoveMessageFromReceiveQueueAsync(A<Guid>._)).MustHaveHappened();
-            //var clientResult = HarakaDb.TryGetObjects<Client>(_clients).Find(x => x.Id == client.Id);
-            //clientResult.IngoingSeqNo.ShouldBe(42u);
-            //_automaticRepeatReQuest.DictionaryWithSortedMessages.Count.ShouldBe(1);
-            //var DictionaryWithSortedMessage = _automaticRepeatReQuest.DictionaryWithSortedMessages[client.Id];
-            //DictionaryWithSortedMessage.Count.ShouldBe(0);
-        }
-
-        [Fact]
-        public void CanSendMessage()
-        {
-            throw new NotImplementedException();
-
-            //var client = new Client("foo", 123);
-            //client.SetOutgoingSeqNo(4);
-            //client.SetInSync(true);
-            //HarakaDb.StoreObject(_clients, new List<Client> { client });
-
-            //var message = new AdministrationMessage();
-            //_automaticRepeatReQuest.Send(message, "foo", 123);
-
-            //A.CallTo(() => _guranteedDelivery.Send(A<ExtendedPacketInformation>.That.Matches(
-            //    x => x.AdministrationMessage == message &&
-            //    x.AdministrationMessage.SeqNo == 5 &&
-            //    x.Ip == "foo" &&
-            //    x.Port == 123))).MustHaveHappened();
-
-            //var clientResult = HarakaDb.TryGetObjects<Client>(_clients).Find(x => x.Id == client.Id);
-            //clientResult.OutgoingSeqNo.ShouldBe(5u);
-        }
-
-        [Fact]
-        public void CanSendMessageInSync()
-        {
-            throw new NotImplementedException();
-            //var client = new Client("foo", 123);
-            //client.SetOutgoingSeqNo(6);
-            //client.SetInSync(false);
-            //HarakaDb.StoreObject(_clients, new List<Client> { client });
-
-
-            //var message = new AdministrationMessage();
-            //_automaticRepeatReQuest.Send(message, "foo", 123);
-
-            //A.CallTo(() => _guranteedDelivery.Send(A<ExtendedPacketInformation>.That.Matches(
-            //    x => x.AdministrationMessage == message &&
-            //         x.AdministrationMessage.SeqNo == 7 &&
-            //         x.AdministrationMessage.Sync &&
-            //         x.Ip == "foo" &&
-            //         x.Port == 123))).MustHaveHappened();
-
-            //var clientResult = HarakaDb.TryGetObjects<Client>(_clients).Find(x => x.Id == client.Id);
-            //clientResult.InSync.ShouldBe(true);
-            //clientResult.OutgoingSeqNo.ShouldBe(7u);
+            A.CallTo(() => guranteedDelivery.Send(A<ExtendedPacketInformation>.That.Matches(x => x.Ip == client.Ip && x.Port == client.Port))).MustHaveHappened();
         }
     }
 }

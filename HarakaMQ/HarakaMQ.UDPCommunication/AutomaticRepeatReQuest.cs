@@ -37,7 +37,7 @@ namespace HarakaMQ.UDPCommunication
         public event EventHandler<MessageReceivedEventArgs> AntiEntropyMessage;
         public event EventHandler<MessageReceivedEventArgs> ClockSyncMessage;
 
-        public void Send(Message msg, string ip, int port, string topic)
+        public async Task Send(Message msg, string ip, int port, string topic)
         {
             if (_messagesToPacket.ContainsKey(ip + ":" + port))
             {
@@ -57,7 +57,7 @@ namespace HarakaMQ.UDPCommunication
             if (!_taskAlreadyRunning)
             {
                 _taskAlreadyRunning = true;
-                MessageReadyToSend();
+                await MessageReadyToSend();
             }
         }
 
@@ -71,12 +71,12 @@ namespace HarakaMQ.UDPCommunication
                 _schedular.TryScheduleDelayedAck(Setup.DelayedAckWaitTime, client.Id, SendDelayedAck);
         }
 
-        public void SendPacket(Packet packet, string ip, int port)
+        public async Task SendPacket(Packet packet, string ip, int port)
         {
             var client = GetClient(ip, port);
             packet.ReturnPort = Setup.Port;
             packet.SeqNo = GetOutGoingSeqNo(ip, port);
-            _guranteedDelivery.Send(new ExtendedPacketInformation(packet, UdpMessageType.Packet, client.Ip, client.Port));
+           await _guranteedDelivery.Send(new ExtendedPacketInformation(packet, UdpMessageType.Packet, client.Ip, client.Port));
 
             if (!Setup.NoDelayedAckClients.Contains(client.Id))
                 _schedular.TryScheduleDelayedAck(Setup.DelayedAckWaitTime, client.Id, SendDelayedAck);
@@ -88,23 +88,20 @@ namespace HarakaMQ.UDPCommunication
             _guranteedDelivery.Listen(port);
         }
 
-        private void MessageReadyToSend()
+        private async Task MessageReadyToSend()
         {
-            Task.Factory.StartNew(async delegate
-            {
-                await Task.Delay(TimeSpan.FromMilliseconds(5));
-                SendMessages();
-            });
+            await Task.Delay(TimeSpan.FromMilliseconds(5));
+            await SendMessages();
         }
 
-        private void SendMessages()
+        private async Task SendMessages()
         {
             foreach (var messagesPerClient in _messagesToPacket)
                 if (messagesPerClient.Value.Count > 0)
-                    SendPacket(messagesPerClient.Key, messagesPerClient.Value);
+                    await SendPacket(messagesPerClient.Key, messagesPerClient.Value);
         }
 
-        private void SendPacket(string clientId, ConcurrentQueue<Tuple<string, Message>> messagesToPackage)
+        private async Task SendPacket(string clientId, ConcurrentQueue<Tuple<string, Message>> messagesToPackage)
         {
             var ipAndPort = clientId.Split(':');
             var client = GetClient(ipAndPort.First(), int.Parse(ipAndPort.Last()));
@@ -151,7 +148,7 @@ namespace HarakaMQ.UDPCommunication
 
                 var package = new Packet(Setup.Port, messagesToSend) {SeqNo = GetOutGoingSeqNo(ipAndPort.First(), int.Parse(ipAndPort.Last())), Type = PacketType.Messages, Topic = currentTopic};
 
-                _guranteedDelivery.Send(new ExtendedPacketInformation(package, UdpMessageType.Packet, client.Ip, client.Port));
+                await _guranteedDelivery.Send(new ExtendedPacketInformation(package, UdpMessageType.Packet, client.Ip, client.Port));
 
                 if (!Setup.NoDelayedAckClients.Contains(client.Id))
                     _schedular.TryScheduleDelayedAck(Setup.DelayedAckWaitTime, client.Id, SendDelayedAck);
@@ -194,7 +191,7 @@ namespace HarakaMQ.UDPCommunication
                         //Inorder
                         SendDelayedAckResponse(receivedPacket, true);
                         UpdateIngoingSequence(receivedPacket.SenderClient, receivedPacket.Packet.SeqNo);
-                        _guranteedDelivery.RemoveMessageFromReceiveQueueAsync(receivedPacket.Id).Start();
+                        await _guranteedDelivery.RemoveMessageFromReceiveQueueAsync(receivedPacket.Id);
                     }
                     else
                     {

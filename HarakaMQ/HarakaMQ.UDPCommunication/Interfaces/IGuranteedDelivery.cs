@@ -7,7 +7,7 @@ namespace HarakaMQ.UDPCommunication.Interfaces
     public interface IGuranteedDelivery
     {
         void Listen(int port);
-        void Send(ExtendedPacketInformation msg);
+        Task Send(ExtendedPacketInformation msg);
         void ReSend(Guid messageId);
         void ReSend(string clientId, int seqNo);
         void SendUdpMessage(UdpMessage msg, UdpMessageType type, string ip, int port);

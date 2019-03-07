@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Net;
 using System.Net.Sockets;
+using System.Threading.Tasks;
 using HarakaMQ.UDPCommunication.Interfaces;
 using HarakaMQ.UDPCommunication.Models;
 using HarakaMQ.UDPCommunication.Utils;
@@ -25,12 +26,12 @@ namespace HarakaMQ.UDPCommunication
             _socket?.Dispose();
         }
 
-        public void SendMsg(SenderMessage msg, string ip, int port)
+        public async Task SendMsg(SenderMessage msg, string ip, int port)
         {
             var broadcast = IPAddress.Parse(ip);
             var ep = new IPEndPoint(broadcast, port);
 
-            _socket.SendTo(MessagePackSerializer.Serialize(msg), ep);
+            await _socket.SendToAsync(new ArraySegment<byte>(MessagePackSerializer.Serialize(msg)), SocketFlags.None , ep);
         }
     }
 }

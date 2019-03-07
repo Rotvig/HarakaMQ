@@ -1,131 +1,133 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Net;
+using System.Net.Sockets;
+using AutoFixture.Xunit2;
 using FakeItEasy;
+using HarakaMQ.DB;
 using HarakaMQ.UDPCommunication;
 using HarakaMQ.UDPCommunication.Interfaces;
 using HarakaMQ.UDPCommunication.Models;
 using HarakaMQ.UnitTests.Utils;
 using Shouldly;
 using Xunit;
-using Setup = HarakaMQ.UDPCommunication.Utils.Setup;
 
 namespace HarakaMQ.UnitTests.HarakaMQ.UDPCommunication
 {
     public class GuranteedDeliveryTests : UnitTestExtension
     {
-        public GuranteedDeliveryTests()
+        [Theory, AutoFakeItEasyData]
+        public void CanHandleExtendedMessageInformationAndDeserializeMessageWhenItIsAMessage(
+            [Frozen] IReceiver receiver,
+            [Frozen] IIdempotentReceiver idempotentReceiver,
+            [Frozen] ISender sender,
+            [Frozen] IHarakaDb harakaDb,
+            GuranteedDelivery sut,
+            [Frozen]Packet packet,
+            SenderMessage senderMessage,
+            ExtendedPacketInformation extendedPacketInformation)
         {
-            _recieverFake = A.Fake<IReceiver>();
-            _idempotentReceiver = A.Fake<IIdempotentReceiver>();
-            _senderFake = A.Fake<ISender>();
+            var ip = "192.1.1.1";
+            var port = 1234;
+            packet.ReturnPort = port;
+            var jsonBytes = MessagePack.MessagePackSerializer.Serialize(new SenderMessage { Type = UdpMessageType.Packet, Body = MessagePack.MessagePackSerializer.Serialize(packet) });
+            var udpResult = new UdpReceiveResult(jsonBytes, new IPEndPoint(IPAddress.Parse(ip), port));
 
-            HarakaDb.CreateFiles(outgoingmessages, ingoingmessages);
-            _guranteedDelivery = new GuranteedDelivery(_senderFake, _recieverFake, _idempotentReceiver, HarakaDb);
-            Setup.IngoingMessagesCS = ingoingmessages;
-            Setup.OutgoingMessagesCS = outgoingmessages;
-            throw new NotImplementedException();
+            A.CallTo(() => harakaDb.GetObjects<ExtendedPacketInformation>(A<string>.Ignored)).Returns(new List<ExtendedPacketInformation>{extendedPacketInformation});
+            A.CallTo(() => idempotentReceiver.VerifyPacket(A<Packet>.Ignored)).Returns(true);
 
-            //A.CallTo(() => _idempotentReceiver.VerifyPacket(A<AdministrationMessage>._)).Returns(true);
+            
+            sut.MessageReceived += (object o, ExtendedPacketInformation message) =>
+            {
+                message.Ip.ShouldBe(ip);
+                message.Port.ShouldBe(port);
+                message.UdpMessageType.ShouldBe(UdpMessageType.Packet);
+                message.Packet.Id.ShouldBe(packet.Id);
+            };
+            
+            sut.HandleExtendedMessageInformation(udpResult);
+
+            A.CallTo(() => harakaDb.StoreObject(A<string>.Ignored, A<List<ExtendedPacketInformation>>.Ignored)).MustHaveHappened();
         }
 
-        private readonly GuranteedDelivery _guranteedDelivery;
-        private readonly IReceiver _recieverFake;
-        private readonly ISender _senderFake;
-        private readonly IIdempotentReceiver _idempotentReceiver;
-
-        private readonly string ingoingmessages = "InGoingMessages";
-        private readonly string outgoingmessages = "OutgoingMessages";
-
-        [Fact]
-        public void CanHandleExtendedMessageInformationAndDeserializeMessageWhenItIsAMessage()
+        [Theory, AutoFakeItEasyData]
+        public async void CanRemoveMessagesFromReceiveQueue(
+            [Frozen] IReceiver receiver,
+            [Frozen] IIdempotentReceiver idempotentReceiver,
+            [Frozen] ISender sender,
+            [Frozen] IHarakaDb harakaDb,
+            GuranteedDelivery sut,
+            List<ExtendedPacketInformation> extendedPacketInformations)
         {
-            throw new NotImplementedException();
+            A.CallTo(() => harakaDb.GetObjects<ExtendedPacketInformation>(A<string>.Ignored)).Returns(extendedPacketInformations);
 
-            //var msg = new AdministrationMessage();
-            //msg.SetReturnPort(321);
-            //var message = new ExtendedPacketInformation(msg, UdpMessageType.Packet, "192.111.1.1", 123);
-            //var jsonBytes = JsonSerializer.Serialize(new SenderMessage { Type = message.UdpMessageType, Body = JsonSerializer.Serialize(message.AdministrationMessage) });
-            //var udpResult = new UdpReceiveResult(jsonBytes, new IPEndPoint(IPAddress.Parse(message.Ip), message.Port));
+            await sut.RemoveMessageFromReceiveQueueAsync(extendedPacketInformations.First().Id);
 
-            //_guranteedDelivery.MessageReceived += (sender, information) =>
-            //{
-            //    information.Ip.ShouldBe(message.Ip);
-            //    information.Port.ShouldBe(msg.ReturnPort);
-            //    information.UdpMessageType.ShouldBe(message.UdpMessageType);
-            //    information.AdministrationMessage.Id.ShouldBe(message.AdministrationMessage.Id);
-            //};
-
-            //_guranteedDelivery.HandleExtendedMessageInformation(udpResult);
-
-            //var messages = HarakaDb.GetObjects<ExtendedPacketInformation>(ingoingmessages);
-            //messages.Count.ShouldBe(1);
-            //var resultMessage = messages.First();
-            //resultMessage.UdpMessageType.ShouldBe(UdpMessageType.Packet);
-            //resultMessage.Ip.ShouldBe("192.111.1.1");
-            //resultMessage.Port.ShouldBe(msg.ReturnPort);
+            A.CallTo(() => harakaDb.StoreObject(A<string>.Ignored, extendedPacketInformations));
+            extendedPacketInformations.Count().ShouldBe(2);
         }
 
-        [Fact]
-        public void CanRemoveMessagesFromReceiveQueue()
+        [Theory, AutoFakeItEasyData]
+        public async void CanRemoveMessagesFromSendQueue(
+            [Frozen] IReceiver receiver,
+            [Frozen] IIdempotentReceiver idempotentReceiver,
+            [Frozen] ISender sender,
+            [Frozen] IHarakaDb harakaDb,
+            GuranteedDelivery sut,
+            List<ExtendedPacketInformation> extendedPacketInformations,
+            Client client)
         {
-            var message = new ExtendedPacketInformation();
-            HarakaDb.StoreObject(ingoingmessages, new List<ExtendedPacketInformation> {message});
-            _guranteedDelivery.RemoveMessageFromReceiveQueueAsync(message.Id).RunSynchronously();
+            extendedPacketInformations.First().Packet.SeqNo = 1;
+            extendedPacketInformations.First().Packet.ReturnPort = client.Port;
+            extendedPacketInformations.First().Ip = client.Ip;
+            extendedPacketInformations.First().Port = client.Port;
 
-            var messages = HarakaDb.TryGetObjects<ExtendedPacketInformation>(ingoingmessages);
-            messages.Count.ShouldBe(0);
-            messages.ShouldNotContain(x => x.Id == message.Id);
+            A.CallTo(() => harakaDb.GetObjects<ExtendedPacketInformation>(A<string>.Ignored)).Returns(extendedPacketInformations);
+
+            await sut.RemoveMessagesFromSendQueueAsync(client.Id, 1);
+
+            A.CallTo(() => harakaDb.StoreObject(A<string>.Ignored, extendedPacketInformations));
+            extendedPacketInformations.Count().ShouldBe(2);
         }
 
-        [Fact]
-        public void CanRemoveMessagesFromSendQueue()
+        [Theory, AutoFakeItEasyData]
+        public void CanResend(
+            [Frozen] IReceiver receiver,
+            [Frozen] IIdempotentReceiver idempotentReceiver,
+            [Frozen] ISender sender,
+            [Frozen] IHarakaDb harakaDb,
+            GuranteedDelivery sut,
+            ExtendedPacketInformation extendedPacketInformation,
+            List<ExtendedPacketInformation> extendedPacketInformations,
+            Guid id)
         {
-            throw new NotImplementedException();
+            extendedPacketInformation.Packet.Id = id;
+            extendedPacketInformations.Add(extendedPacketInformation);
+            A.CallTo(() => harakaDb.TryGetObjects<ExtendedPacketInformation>(A<string>.Ignored)).Returns(extendedPacketInformations);
 
-            //var message = new ExtendedPacketInformation
-            //{
-            //    AdministrationMessage = new AdministrationMessage() { SeqNo = 1 },
-            //    Ip = "foo",
-            //    Port = 1,
-            //};
-            //HarakaDb.StoreObject(outgoingmessages, new List<ExtendedPacketInformation> { message });
+            sut.ReSend(id);
 
-            //_guranteedDelivery.RemoveMessagesFromSendQueueAsync(message.Ip + message.Port, 1).RunSynchronously();
-
-            //var messages = HarakaDb.TryGetObjects<ExtendedPacketInformation>(outgoingmessages);
-            //messages.Count.ShouldBe(0);
-            //messages.ShouldNotContain(x => x.Id == message.Id);
+            A.CallTo(() => sender.SendMsg(A<SenderMessage>.Ignored, extendedPacketInformation.Ip, extendedPacketInformation.Port)).MustHaveHappened();
         }
 
-        [Fact]
-        public void CanResend()
+        [Theory, AutoFakeItEasyData]
+        public async void CanSendMessage(
+            [Frozen] IReceiver receiver,
+            [Frozen] IIdempotentReceiver idempotentReceiver,
+            [Frozen] ISender sender,
+            [Frozen] IHarakaDb harakaDb,
+            GuranteedDelivery sut,
+            ExtendedPacketInformation extendedPacketInformation,
+            List<ExtendedPacketInformation> extendedPacketInformations,
+            Guid id)
         {
-            throw new NotImplementedException();
+            extendedPacketInformation.Packet.Id = id;
+            A.CallTo(() => harakaDb.TryGetObjects<ExtendedPacketInformation>(A<string>.Ignored)).Returns(extendedPacketInformations);
 
-            //var extendedMessage = new ExtendedPacketInformation { AdministrationMessage = new AdministrationMessage(), Ip = "foo", Port = 1};
-            //HarakaDb.StoreObject(Setup.OutgoingMessagesCS, new List<ExtendedPacketInformation>() { extendedMessage });
+            await sut.Send(extendedPacketInformation);
 
-            //_guranteedDelivery.ReSend(extendedMessage.AdministrationMessage.Id);
-
-            //A.CallTo(() => _senderFake.SendMsg(A<SenderMessage>._, "foo", 1)).MustHaveHappened();
-        }
-
-        [Fact]
-        public void CanSendMessage()
-        {
-            var extendedMessage = new ExtendedPacketInformation();
-            extendedMessage.SetIpAndPort("foo", 123);
-            extendedMessage.SetId(Guid.NewGuid());
-
-            _guranteedDelivery.Send(extendedMessage);
-
-            A.CallTo(() => _senderFake.SendMsg(A<SenderMessage>._, "foo", 123)).MustHaveHappened();
-            var messages = HarakaDb.TryGetObjects<ExtendedPacketInformation>(outgoingmessages);
-            messages.Count.ShouldBe(1);
-            messages.ShouldContain(x => x.Id == extendedMessage.Id);
-            var message = messages.Find(x => x.Id == extendedMessage.Id);
-            message.Ip.ShouldBe("foo");
-            message.Port.ShouldBe(123);
+            A.CallTo(() => sender.SendMsg(A<SenderMessage>.Ignored, extendedPacketInformation.Ip, extendedPacketInformation.Port)).MustHaveHappened();
         }
     }
 }

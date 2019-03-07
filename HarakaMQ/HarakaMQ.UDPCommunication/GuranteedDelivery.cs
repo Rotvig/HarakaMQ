@@ -44,7 +44,7 @@ namespace HarakaMQ.UDPCommunication
             //StartupSequence();
         }
 
-        public void Send(ExtendedPacketInformation msg)
+        public async Task Send(ExtendedPacketInformation msg)
         {
             var sendMsg = new SenderMessage
             {
@@ -59,7 +59,7 @@ namespace HarakaMQ.UDPCommunication
                 _harakaDb.StoreObject(Setup.OutgoingMessagesCS, messages);
             }
 
-            _sender.SendMsg(sendMsg, msg.Ip, msg.Port);
+            await _sender.SendMsg(sendMsg, msg.Ip, msg.Port);
         }
 
         public void ReSend(Guid messageId)
@@ -97,27 +97,27 @@ namespace HarakaMQ.UDPCommunication
             _sender.SendMsg(sendMsg, ip, port);
         }
 
-        public Task RemoveMessagesFromSendQueueAsync(string clientId, int seqNo)
+        public async Task RemoveMessagesFromSendQueueAsync(string clientId, int seqNo)
         {
-            return new Task(() =>
+            await Task.Run(() =>
             {
                 lock (_harakaDb.GetLock(Setup.OutgoingMessagesCS))
                 {
                     var messages = _harakaDb.GetObjects<ExtendedPacketInformation>(Setup.OutgoingMessagesCS);
-                    messages.RemoveAll(x => x.SenderClient == clientId && x.Packet.SeqNo <= seqNo);
+                    messages.Remove(messages.First(x => x.SenderClient == clientId && x.Packet.SeqNo <= seqNo));
                     _harakaDb.StoreObject(Setup.OutgoingMessagesCS, messages);
                 }
             });
         }
 
-        public Task RemoveMessageFromReceiveQueueAsync(Guid msgid)
+        public async Task RemoveMessageFromReceiveQueueAsync(Guid msgid)
         {
-            return new Task(() =>
+            await Task.Run(() =>
             {
                 lock (_harakaDb.GetLock(Setup.IngoingMessagesCS))
                 {
                     var messages = _harakaDb.GetObjects<ExtendedPacketInformation>(Setup.IngoingMessagesCS);
-                    messages.RemoveAll(x => x.Id == msgid);
+                    messages.Remove(messages.First(x => x.Id == msgid));
                     _harakaDb.StoreObject(Setup.IngoingMessagesCS, messages);
                 }
             });

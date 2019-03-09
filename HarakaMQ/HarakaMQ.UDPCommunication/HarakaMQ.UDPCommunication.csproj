@@ -19,11 +19,11 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="MessagePack" Version="1.7.3.4" />
     <PackageReference Include="SimpleInjector" Version="4.3.0" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\HarakaMQ.DB\HarakaMQ.DB.csproj" />
+    <ProjectReference Include="..\HarakaMQ.Shared\HarakaMQ.Shared.csproj" />
   </ItemGroup>
 </Project>

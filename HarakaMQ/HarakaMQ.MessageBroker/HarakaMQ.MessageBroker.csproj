@@ -7,7 +7,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="MessagePack" Version="1.7.3.4" />
     <PackageReference Include="Newtonsoft.Json" Version="11.0.2" />
     <PackageReference Include="SimpleInjector" Version="4.3.0" />
     <PackageReference Include="Yort.Ntp.Portable" Version="1.0.14" />
@@ -15,6 +14,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\HarakaMQ.DB\HarakaMQ.DB.csproj" />
+    <ProjectReference Include="..\HarakaMQ.Shared\HarakaMQ.Shared.csproj" />
     <ProjectReference Include="..\HarakaMQ.UDPCommunication\HarakaMQ.UDPCommunication.csproj" />
   </ItemGroup>
 

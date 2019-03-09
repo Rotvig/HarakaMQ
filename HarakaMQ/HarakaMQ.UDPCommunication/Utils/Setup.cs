@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using HarakaMQ.DB;
+using HarakaMQ.Shared;
 using HarakaMQ.UDPCommunication.Interfaces;
 using SimpleInjector;
 
@@ -34,14 +35,17 @@ namespace HarakaMQ.UDPCommunication.Utils
             container = new Container();
 
             // 2. Configure the container (register)
+            var serializer = new UTF8JsonSerializer();
+            container.Register<ISerializer>(() => serializer, Lifestyle.Singleton);
+//            container.Register<ISerializer, MessagePackSerializer>();
+
             container.Register<ISchedular, Schedular>(Lifestyle.Singleton);
             container.Register<ISender, Sender>(Lifestyle.Singleton);
             container.Register<IReceiver, Receiver>(Lifestyle.Singleton);
             container.Register<IAutomaticRepeatReQuest, AutomaticRepeatReQuest>(Lifestyle.Transient);
             container.Register<IGuranteedDelivery, GuranteedDelivery>(Lifestyle.Singleton);
             container.Register<IIdempotentReceiver, IdempotentReceiver>(Lifestyle.Singleton);
-            container.Register<IHarakaDb>(() => new HarakaDb(OutgoingMessagesCS, IngoingMessagesCS, ClientsCS),
-                Lifestyle.Singleton);
+            container.Register<IHarakaDb>(() => new HarakaDb(serializer, OutgoingMessagesCS, IngoingMessagesCS, ClientsCS), Lifestyle.Singleton);
 
             // 3. Verify your configuration: Only for testing
             container.Verify();

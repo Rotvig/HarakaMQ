@@ -19,7 +19,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="MessagePack" Version="1.7.3.4" />
+    <ProjectReference Include="..\HarakaMQ.Shared\HarakaMQ.Shared.csproj" />
   </ItemGroup>
 
 </Project>

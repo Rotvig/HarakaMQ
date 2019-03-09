@@ -3,27 +3,29 @@ using System.Linq;
 using System.Net.Sockets;
 using System.Threading.Tasks;
 using HarakaMQ.DB;
+using HarakaMQ.Shared;
 using HarakaMQ.UDPCommunication.Interfaces;
 using HarakaMQ.UDPCommunication.Models;
 using HarakaMQ.UDPCommunication.Utils;
-using MessagePack;
 
 namespace HarakaMQ.UDPCommunication
 {
     public class GuranteedDelivery : IGuranteedDelivery, IDisposable
     {
         private readonly IHarakaDb _harakaDb;
+        private readonly ISerializer _serializer;
         private readonly IIdempotentReceiver _idempotentReceiver;
         private readonly IReceiver _receiver;
         private readonly ISender _sender;
         private Task _queueConsumerThread;
         private bool _stopConsuming;
 
-        public GuranteedDelivery(ISender sender, IReceiver receiver, IIdempotentReceiver idempotentReceiver, IHarakaDb harakaDb)
+        public GuranteedDelivery(ISender sender, IReceiver receiver, IIdempotentReceiver idempotentReceiver, IHarakaDb harakaDb, ISerializer serializer)
         {
             _sender = sender;
             _receiver = receiver;
             _harakaDb = harakaDb;
+            _serializer = serializer;
             _idempotentReceiver = idempotentReceiver;
         }
 
@@ -48,7 +50,7 @@ namespace HarakaMQ.UDPCommunication
         {
             var sendMsg = new SenderMessage
             {
-                Body = MessagePackSerializer.Serialize(msg.Packet),
+                Body = _serializer.Serialize(msg.Packet),
                 Type = msg.UdpMessageType
             };
 
@@ -68,7 +70,7 @@ namespace HarakaMQ.UDPCommunication
 
             var sendMsg = new SenderMessage
             {
-                Body = MessagePackSerializer.Serialize(extendedPacketInformation.Packet),
+                Body = _serializer.Serialize(extendedPacketInformation.Packet),
                 Type = extendedPacketInformation.UdpMessageType
             };
             _sender.SendMsg(sendMsg, extendedPacketInformation.Ip, extendedPacketInformation.Port);
@@ -80,7 +82,7 @@ namespace HarakaMQ.UDPCommunication
 
             var sendMsg = new SenderMessage
             {
-                Body = MessagePackSerializer.Serialize(extendedPacketInformation.Packet),
+                Body = _serializer.Serialize(extendedPacketInformation.Packet),
                 Type = extendedPacketInformation.UdpMessageType
             };
             _sender.SendMsg(sendMsg, extendedPacketInformation.Ip, extendedPacketInformation.Port);
@@ -90,7 +92,7 @@ namespace HarakaMQ.UDPCommunication
         {
             var sendMsg = new SenderMessage
             {
-                Body = MessagePackSerializer.Serialize(msg),
+                Body = _serializer.Serialize(msg),
                 Type = type
             };
 
@@ -126,13 +128,13 @@ namespace HarakaMQ.UDPCommunication
         public void HandleExtendedMessageInformation(UdpReceiveResult result)
         {
             ExtendedPacketInformation extendedMsg;
-            var deserializedUdpMessage = MessagePackSerializer.Deserialize<SenderMessage>(result.Buffer);
+            var deserializedUdpMessage = _serializer.Deserialize<SenderMessage>(result.Buffer);
 
             switch (deserializedUdpMessage.Type)
             {
                 case UdpMessageType.DelayedAck:
                 case UdpMessageType.Packet:
-                    var message = MessagePackSerializer.Deserialize<Packet>(deserializedUdpMessage.Body);
+                    var message = _serializer.Deserialize<Packet>(deserializedUdpMessage.Body);
                     message.Size = deserializedUdpMessage.Body.Length;
 
                     if (_idempotentReceiver.VerifyPacket(message))
@@ -148,12 +150,12 @@ namespace HarakaMQ.UDPCommunication
                         }
                     break;
                 case UdpMessageType.ResendRequest:
-                    var resendMessage = MessagePackSerializer.Deserialize<UdpMessage>(deserializedUdpMessage.Body);
+                    var resendMessage = _serializer.Deserialize<UdpMessage>(deserializedUdpMessage.Body);
                     ReSend(result.RemoteEndPoint.Address.ToString() + resendMessage.ReturnPort, resendMessage.SeqNo);
                     break;
                 case UdpMessageType.DelayedAckResponse:
                 case UdpMessageType.GarbageCollect:
-                    var udpMessage = MessagePackSerializer.Deserialize<UdpMessage>(deserializedUdpMessage.Body);
+                    var udpMessage = _serializer.Deserialize<UdpMessage>(deserializedUdpMessage.Body);
                     extendedMsg = new ExtendedPacketInformation(udpMessage, deserializedUdpMessage.Type, result.RemoteEndPoint.Address.ToString());
                     OnMessageReceived(extendedMsg);
                     break;
@@ -188,7 +190,7 @@ namespace HarakaMQ.UDPCommunication
                 {
                     var sendMsg = new SenderMessage
                     {
-                        Body = MessagePackSerializer.Serialize(extendedMsg.Packet),
+                        Body = _serializer.Serialize(extendedMsg.Packet),
                         Type = extendedMsg.UdpMessageType
                     };
                     _sender.SendMsg(sendMsg, extendedMsg.Ip, extendedMsg.Port);

@@ -4,10 +4,10 @@ using System.Diagnostics;
 using System.Linq;
 using HarakaMQ.MessageBroker.Interfaces;
 using HarakaMQ.MessageBroker.Models;
+using HarakaMQ.Shared;
 using HarakaMQ.UDPCommunication.Events;
 using HarakaMQ.UDPCommunication.Interfaces;
 using HarakaMQ.UDPCommunication.Models;
-using MessagePack;
 
 namespace HarakaMQ.MessageBroker
 {
@@ -16,6 +16,7 @@ namespace HarakaMQ.MessageBroker
         private readonly IAntiEntropy _antiEntropy;
         private readonly List<BrokerInformation> _brokers = new List<BrokerInformation>();
         private readonly ITimeSyncProtocol _timeSyncProtocol;
+        private readonly ISerializer _serializer;
         private readonly Utils.IJsonConfigurator _jsonConfigurator;
         private readonly int _latencyInMs;
         private readonly ISchedular _schedular;
@@ -26,12 +27,13 @@ namespace HarakaMQ.MessageBroker
         private int _lastAntiEntropyCommit;
         private bool _stopGossip;
 
-        public PingPong(IUdpCommunication udpCommunication, ISchedular schedular, IAntiEntropy antiEntropy, Utils.IJsonConfigurator jsonConfigurator, ITimeSyncProtocol timesyncProtocol)
+        public PingPong(IUdpCommunication udpCommunication, ISchedular schedular, IAntiEntropy antiEntropy, Utils.IJsonConfigurator jsonConfigurator, ITimeSyncProtocol timesyncProtocol, ISerializer serializer)
         {
             _schedular = schedular;
             _antiEntropy = antiEntropy;
             _jsonConfigurator = jsonConfigurator;
             _timeSyncProtocol = timesyncProtocol;
+            _serializer = serializer;
             _udpCommunication = udpCommunication;
             _latencyInMs = _jsonConfigurator.GetSettings().AntiEntropyMilliseonds / 10; //Todo: find real latency
 
@@ -64,7 +66,7 @@ namespace HarakaMQ.MessageBroker
 
         public void AntiEntropyMessageReceived(MessageReceivedEventArgs messageReceivedEventArgs)
         {
-            var antiEntropyMessage = MessagePackSerializer.Deserialize<AntiEntropyMessage>(messageReceivedEventArgs.AdministrationMessage.Data);
+            var antiEntropyMessage = _serializer.Deserialize<AntiEntropyMessage>(messageReceivedEventArgs.AdministrationMessage.Data);
             var senderBroker = _brokers.Find(x => x.Ipaddress == messageReceivedEventArgs.IpAddress && x.Port == messageReceivedEventArgs.Port);
             senderBroker.CurrentAntiEntropyRound = antiEntropyMessage.AntiEntropyRound;
             //Todo: remove this
@@ -151,7 +153,7 @@ namespace HarakaMQ.MessageBroker
                 Console.WriteLine("Committed Messages " + comittedMessagesToSend.Count);
                 Console.WriteLine("Tentative Messages " + tentativeMessagesToSend.Count);
 
-                var administrationMessage = new AdministrationMessage(MessageType.AntiEntropy, MessagePackSerializer.Serialize(new AntiEntropyMessage
+                var administrationMessage = new AdministrationMessage(MessageType.AntiEntropy, _serializer.Serialize(new AntiEntropyMessage
                 {
                     PrimaryNumber = _jsonConfigurator.GetSettings().PrimaryNumber,
                     Tentative = tentativeMessagesToSend,
@@ -180,7 +182,7 @@ namespace HarakaMQ.MessageBroker
             _currentAntiEntropyRound = antiEntropyMessage.AntiEntropyRound;
             var primaryBroker = _brokers.Find(x => x.PrimaryNumber == antiEntropyMessage.PrimaryNumber);
 
-            _udpCommunication.SendAdministrationMessage(new AdministrationMessage(MessageType.AntiEntropy, MessagePackSerializer.Serialize(new AntiEntropyMessage
+            _udpCommunication.SendAdministrationMessage(new AdministrationMessage(MessageType.AntiEntropy, _serializer.Serialize(new AntiEntropyMessage
             {
                 PrimaryNumber = _jsonConfigurator.GetSettings().PrimaryNumber,
                 Tentative = _antiEntropy.GetTentativeMessagesToSendForPrimaryBroker(_currentAntiEntropyRound),

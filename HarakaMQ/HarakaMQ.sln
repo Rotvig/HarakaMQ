@@ -17,6 +17,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HarakaMQ.Test.Subscriber", 
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HarakaMQ.UnitTests", "HarakaMQ.UnitTesting\HarakaMQ.UnitTests.csproj", "{6E8BC631-D533-4EBA-B03C-AAAC68371C47}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HarakaMQ.Shared", "HarakaMQ.Shared\HarakaMQ.Shared.csproj", "{61D3AFEA-EE6E-4266-A8FD-AD8F8C1BC202}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -51,6 +53,10 @@ Global
 		{6E8BC631-D533-4EBA-B03C-AAAC68371C47}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{6E8BC631-D533-4EBA-B03C-AAAC68371C47}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{6E8BC631-D533-4EBA-B03C-AAAC68371C47}.Release|Any CPU.Build.0 = Release|Any CPU
+		{61D3AFEA-EE6E-4266-A8FD-AD8F8C1BC202}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{61D3AFEA-EE6E-4266-A8FD-AD8F8C1BC202}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{61D3AFEA-EE6E-4266-A8FD-AD8F8C1BC202}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{61D3AFEA-EE6E-4266-A8FD-AD8F8C1BC202}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

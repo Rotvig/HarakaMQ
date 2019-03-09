@@ -3,20 +3,18 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using MessagePack;
+using HarakaMQ.Shared;
 
 namespace HarakaMQ.DB
 {
     public class HarakaDb : IHarakaDb
     {
+        private readonly ISerializer _serializer;
         private readonly ConcurrentDictionary<string, object> Mutexes = new ConcurrentDictionary<string, object>();
 
-        public HarakaDb()
+        public HarakaDb(ISerializer serializer, params string[] fileNames)
         {
-        }
-
-        public HarakaDb(params string[] fileNames)
-        {
+            _serializer = serializer;
             CreateFiles(fileNames);
         }
 
@@ -33,11 +31,11 @@ namespace HarakaMQ.DB
             //It is needed because the file is locked some times
             try
             {
-                File.WriteAllBytes(fileName + ".db", MessagePackSerializer.Serialize(obj));
+                File.WriteAllBytes(fileName + ".db", _serializer.Serialize(obj));
             }
             catch (Exception)
             {
-                File.WriteAllBytes(fileName + ".db", MessagePackSerializer.Serialize(obj));
+                File.WriteAllBytes(fileName + ".db", _serializer.Serialize(obj));
             }
             return obj;
         }
@@ -51,7 +49,7 @@ namespace HarakaMQ.DB
         public List<T> GetObjects<T>(string fileName)
         {
             var output = File.ReadAllBytes(fileName + ".db");
-            return output.Length == 0 ? (List<T>) Activator.CreateInstance(typeof(List<T>)) : MessagePackSerializer.Deserialize<List<T>>(output);
+            return output.Length == 0 ? (List<T>) Activator.CreateInstance(typeof(List<T>)) : _serializer.Deserialize<List<T>>(output);
         }
 
         public List<T> TryGetObjects<T>(string fileName)
@@ -63,7 +61,7 @@ namespace HarakaMQ.DB
                 output = File.ReadAllBytes(fileName + ".db");
             }
 
-            return output.Length == 0 ? (List<T>) Activator.CreateInstance(typeof(List<T>)) : MessagePackSerializer.Deserialize<List<T>>(output);
+            return output.Length == 0 ? (List<T>) Activator.CreateInstance(typeof(List<T>)) : _serializer.Deserialize<List<T>>(output);
         }
 
         public List<string> CreatedFiles()

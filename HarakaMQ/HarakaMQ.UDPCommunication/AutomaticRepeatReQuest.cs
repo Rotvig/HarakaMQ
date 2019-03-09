@@ -180,7 +180,7 @@ namespace HarakaMQ.UDPCommunication
                 case UdpMessageType.DelayedAckResponse:
                     _schedular.CancelTask(receivedPacket.UdpMessage.MessageId.Value);
                     if (receivedPacket.UdpMessage.InOrder)
-                        _guranteedDelivery.RemoveMessagesFromSendQueueAsync(receivedPacket.SenderClient, receivedPacket.UdpMessage.SeqNo).Start();
+                        await _guranteedDelivery.RemoveMessagesFromSendQueueAsync(receivedPacket.SenderClient, receivedPacket.UdpMessage.SeqNo);
                     break;
                 case UdpMessageType.DelayedAck:
 
@@ -201,7 +201,7 @@ namespace HarakaMQ.UDPCommunication
                     }
                     break;
                 case UdpMessageType.GarbageCollect:
-                    _guranteedDelivery.RemoveMessagesFromSendQueueAsync(receivedPacket.SenderClient, receivedPacket.UdpMessage.SeqNo).Start();
+                    await _guranteedDelivery.RemoveMessagesFromSendQueueAsync(receivedPacket.SenderClient, receivedPacket.UdpMessage.SeqNo);
                     break;
                 default:
                     throw new ArgumentException("Couldnt handle message");

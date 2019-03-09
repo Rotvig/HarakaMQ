@@ -35,7 +35,7 @@ namespace HarakaMQ.DB
             {
                 File.WriteAllBytes(fileName + ".db", MessagePackSerializer.Serialize(obj));
             }
-            catch (Exception e)
+            catch (Exception)
             {
                 File.WriteAllBytes(fileName + ".db", MessagePackSerializer.Serialize(obj));
             }

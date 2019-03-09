@@ -7,7 +7,7 @@
     <Company />
     <Description>The local message storage project for HarakaMQ.UDPCommunication</Description>
     <Copyright>René Rotvig Jensen</Copyright>
-    <PackageLicenseUrl>https://github.com/Rotvig/HarakaMQ/blob/master/LICENSE</PackageLicenseUrl>
+    <License>https://github.com/Rotvig/HarakaMQ/blob/master/LICENSE</License>
     <PackageProjectUrl>https://github.com/Rotvig/HarakaMQ</PackageProjectUrl>
     <RepositoryUrl>https://github.com/Rotvig/HarakaMQ</RepositoryUrl>
     <RepositoryType>Git</RepositoryType>
@@ -15,6 +15,7 @@
     <PackageReleaseNotes>First version of the HarakaMQ.DB.</PackageReleaseNotes>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <Version>1.0.1</Version>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
   </PropertyGroup>
 
   <ItemGroup>

@@ -60,9 +60,9 @@ namespace HarakaMQ.UDPCommunication
             _automaticRepeatReqeust.Send(msg, ip, port, topic);
         }
 
-        public void SendPackage(Packet packet, string ip, int port)
+        public async void SendPackage(Packet packet, string ip, int port)
         {
-            _automaticRepeatReqeust.SendPacket(packet, ip, port);
+            await _automaticRepeatReqeust.SendPacket(packet, ip, port);
         }
 
         public void SendAdministrationMessage(AdministrationMessage msg)

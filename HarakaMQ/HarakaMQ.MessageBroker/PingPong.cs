@@ -20,11 +20,11 @@ namespace HarakaMQ.MessageBroker
         private readonly int _latencyInMs;
         private readonly ISchedular _schedular;
         private readonly IUdpCommunication _udpCommunication;
-        private volatile int _currentAntiEntropyRound;
+        private int _currentAntiEntropyRound;
         private int _globalSequenceNumber;
         private bool _isPrimary;
-        private volatile int _lastAntiEntropyCommit;
-        private volatile bool _stopGossip;
+        private int _lastAntiEntropyCommit;
+        private bool _stopGossip;
 
         public PingPong(IUdpCommunication udpCommunication, ISchedular schedular, IAntiEntropy antiEntropy, Utils.IJsonConfigurator jsonConfigurator, ITimeSyncProtocol timesyncProtocol)
         {

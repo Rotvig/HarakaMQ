@@ -7,9 +7,8 @@ namespace HarakaMQ.UDPCommunication.Interfaces
     public interface IAutomaticRepeatReQuest : IMessageEvents
     {
         void Listen(int port);
-        Task Send(Message msg, string ip, int port, string topic);
-        void SendAdministrationMessage(AdministrationMessage msg, string ip, int port);
-        Task SendPacket(Packet packet, string ip, int port);
-        event EventHandler<EventArgs> MessageNotSend;
+        Task Send(Message msg, Broker broker, string topic);
+        void SendAdministrationMessage(AdministrationMessage msg, Broker broker);
+        Task SendPacket(Packet packet, Broker broker);
     }
 }

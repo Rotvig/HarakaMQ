@@ -1,4 +1,5 @@
 ﻿using HarakaMQ.UDPCommunication.Models;
+using HarakaMQ.UDPCommunication.Utils;
 
 namespace HarakaMQ.UDPCommunication.Interfaces
 {
@@ -9,8 +10,6 @@ namespace HarakaMQ.UDPCommunication.Interfaces
         void SendAdministrationMessage(AdministrationMessage msg);
         void SendAdministrationMessage(AdministrationMessage msg, string ip, int port);
         void SendPackage(Packet packet, string ip, int port);
-        void Listen(int port);
-        void SetBrokerInformation(string ip, int port);
-        void SetUpUdpComponent(int ackAfterNumOfMessages, int delayedAckWaitTime, bool dontFragment = false, params string[] noDelayedAckClientIds);
+        void Listen(HarakaMQUDPConfiguration harakaMqudpConfiguration);
     }
 }

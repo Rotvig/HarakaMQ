@@ -5,6 +5,7 @@ using HarakaMQ.Client.Events;
 using HarakaMQ.UDPCommunication.Events;
 using HarakaMQ.UDPCommunication.Interfaces;
 using HarakaMQ.UDPCommunication.Models;
+using HarakaMQ.UDPCommunication.Utils;
 
 namespace HarakaMQ.Client
 {
@@ -12,16 +13,13 @@ namespace HarakaMQ.Client
     {
         private readonly IUdpCommunication _comm;
         private readonly List<Tuple<IBasicConsumer, string>> consumers;
-        private int _listenPort;
 
-        public Model(IUdpCommunication udpComm, int listenPort, string ip, int brokerPort)
+        public Model(IUdpCommunication udpComm, HarakaMQUDPConfiguration harakaMqudpConfiguration = new HarakaMQUDPConfiguration())
         {
-            _listenPort = listenPort;
             _comm = udpComm;
             consumers = new List<Tuple<IBasicConsumer, string>>();
             _comm.PublishPackage += OnMessageReceived;
-            _comm.Listen(listenPort);
-            _comm.SetBrokerInformation(ip, brokerPort);
+            _comm.Listen(harakaMqudpConfiguration);
         }
 
         public void BasicConsume(string queue, IBasicConsumer consumer)

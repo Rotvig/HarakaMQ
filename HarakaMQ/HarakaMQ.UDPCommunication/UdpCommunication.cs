@@ -4,14 +4,14 @@ using HarakaMQ.UDPCommunication.Events;
 using HarakaMQ.UDPCommunication.Interfaces;
 using HarakaMQ.UDPCommunication.Models;
 using HarakaMQ.UDPCommunication.Utils;
+using SimpleInjector;
 
 namespace HarakaMQ.UDPCommunication
 {
     public class UdpCommunication : IUdpCommunication
     {
         private IAutomaticRepeatReQuest _automaticRepeatReqeust;
-        private string _ip;
-        private int _port;
+        private HarakaMQUDPConfiguration _harakaMqudpConfiguration;
 
         public event EventHandler<MessageReceivedEventArgs> QueueDeclare;
         public event EventHandler<PublishPacketReceivedEventArgs> PublishPackage;
@@ -20,12 +20,12 @@ namespace HarakaMQ.UDPCommunication
         public event EventHandler<MessageReceivedEventArgs> AntiEntropyMessage;
         public event EventHandler<MessageReceivedEventArgs> ClockSyncMessage;
 
-        public void Listen(int port)
+        public void Listen(HarakaMQUDPConfiguration harakaMqudpConfiguration)
         {
-            Setup.Ip = Ext.GetIp4Address();
-            Setup.Port = port;
+            _harakaMqudpConfiguration = harakaMqudpConfiguration;
             Setup.SetupDi();
             _automaticRepeatReqeust = Setup.container.GetInstance<IAutomaticRepeatReQuest>();
+            Setup.container.Register(() => harakaMqudpConfiguration, Lifestyle.Singleton);
 
             _automaticRepeatReqeust.PublishPackage += PublishPackage;
             _automaticRepeatReqeust.Subscribe += Subscribe;
@@ -33,26 +33,12 @@ namespace HarakaMQ.UDPCommunication
             _automaticRepeatReqeust.QueueDeclare += QueueDeclare;
             _automaticRepeatReqeust.AntiEntropyMessage += AntiEntropyMessage;
             _automaticRepeatReqeust.ClockSyncMessage += ClockSyncMessage;
-            _automaticRepeatReqeust.Listen(port);
-        }
-
-        public void SetBrokerInformation(string ip, int port)
-        {
-            _port = port;
-            _ip = ip;
-        }
-
-        public void SetUpUdpComponent(int ackAfterNumOfMessages, int delayedAckWaitTime, bool dontFragment = false, params string[] noDelayedAckClientIds)
-        {
-            Setup.AckAfterNumber = ackAfterNumOfMessages;
-            Setup.DelayedAckWaitTime = delayedAckWaitTime;
-            Setup.NoDelayedAckClients = noDelayedAckClientIds.ToList();
-            Setup.DontFragment = dontFragment;
+            _automaticRepeatReqeust.Listen(harakaMqudpConfiguration.ListenPort);
         }
 
         public void Send(Message msg, string topic)
         {
-            _automaticRepeatReqeust.Send(msg, _ip, _port, topic);
+            _automaticRepeatReqeust.Send(msg, topic);
         }
 
         public void Send(Message msg, string ip, int port, string topic)
@@ -67,7 +53,7 @@ namespace HarakaMQ.UDPCommunication
 
         public void SendAdministrationMessage(AdministrationMessage msg)
         {
-            _automaticRepeatReqeust.SendAdministrationMessage(msg, _ip, _port);
+            _automaticRepeatReqeust.SendAdministrationMessage(msg);
         }
 
         public void SendAdministrationMessage(AdministrationMessage msg, string ip, int port)

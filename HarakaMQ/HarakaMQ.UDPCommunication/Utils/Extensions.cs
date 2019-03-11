@@ -22,14 +22,5 @@ namespace HarakaMQ.UDPCommunication.Utils
 
             return ip4Address;
         }
-
-        internal static Int32 CreateId()
-        {
-            //GeneratID
-            var tempArray = new byte[4];
-            var random = new Random();
-            random.NextBytes(tempArray);
-            return BitConverter.ToInt32(tempArray, 0);
-        }
     }
 }

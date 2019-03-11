@@ -37,7 +37,7 @@ namespace HarakaMQ.UDPCommunication
         public event EventHandler<MessageReceivedEventArgs> AntiEntropyMessage;
         public event EventHandler<MessageReceivedEventArgs> ClockSyncMessage;
 
-        public async Task Send(Message msg, string ip, int port, string topic)
+        public async Task Send(Message msg, Broker broker, string topic)
         {
             if (_messagesToPacket.ContainsKey(ip + ":" + port))
             {
@@ -61,7 +61,7 @@ namespace HarakaMQ.UDPCommunication
             }
         }
 
-        public void SendAdministrationMessage(AdministrationMessage msg, string ip, int port)
+        public void SendAdministrationMessage(AdministrationMessage msg, Broker broker)
         {
             var client = GetClient(ip, port);
             var package = new Packet(Setup.Port) {SeqNo = GetOutGoingSeqNo(ip, port), Type = PacketType.AdminitrationMessages, AdministrationMessage = msg};
@@ -71,7 +71,7 @@ namespace HarakaMQ.UDPCommunication
                 _schedular.TryScheduleDelayedAck(Setup.DelayedAckWaitTime, client.Id, SendDelayedAck);
         }
 
-        public async Task SendPacket(Packet packet, string ip, int port)
+        public async Task SendPacket(Packet packet, Broker broker)
         {
             var client = GetClient(ip, port);
             packet.ReturnPort = Setup.Port;

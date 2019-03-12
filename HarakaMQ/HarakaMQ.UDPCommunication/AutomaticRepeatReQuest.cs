@@ -37,20 +37,20 @@ namespace HarakaMQ.UDPCommunication
         public event EventHandler<MessageReceivedEventArgs> AntiEntropyMessage;
         public event EventHandler<MessageReceivedEventArgs> ClockSyncMessage;
 
-        public async Task Send(Message msg, Broker broker, string topic)
+        public async Task Send(Message msg, string topic, Broker broker)
         {
-            if (_messagesToPacket.ContainsKey(ip + ":" + port))
+            if (_messagesToPacket.ContainsKey(broker.IpAdress + ":" + broker.Port))
             {
-                _messagesToPacket[ip + ":" + port].Enqueue(new Tuple<string, Message>(topic, msg));
+                _messagesToPacket[broker.IpAdress + ":" + broker.Port].Enqueue(new Tuple<string, Message>(topic, msg));
             }
             else
             {
                 var queue = new ConcurrentQueue<Tuple<string, Message>>();
                 queue.Enqueue(new Tuple<string, Message>(topic, msg));
 
-                if(!_messagesToPacket.ContainsKey(ip + ":" + port))
+                if(!_messagesToPacket.ContainsKey(broker.IpAdress + ":" + broker.Port))
                 {
-                    _messagesToPacket.Add(ip + ":" + port, queue);
+                    _messagesToPacket.Add(broker.IpAdress + ":" + broker.Port, queue);
                 }
             }
 
@@ -63,8 +63,8 @@ namespace HarakaMQ.UDPCommunication
 
         public void SendAdministrationMessage(AdministrationMessage msg, Broker broker)
         {
-            var client = GetClient(ip, port);
-            var package = new Packet(Setup.Port) {SeqNo = GetOutGoingSeqNo(ip, port), Type = PacketType.AdminitrationMessages, AdministrationMessage = msg};
+            var client = GetClient(broker.IpAdress, broker.Port);
+            var package = new Packet(Setup.Port) {SeqNo = GetOutGoingSeqNo(broker.IpAdress, broker.Port), Type = PacketType.AdminitrationMessages, AdministrationMessage = msg};
             _guranteedDelivery.Send(new ExtendedPacketInformation(package, UdpMessageType.Packet, client.Ip, client.Port));
 
             if (!Setup.NoDelayedAckClients.Contains(client.Id))
@@ -73,9 +73,9 @@ namespace HarakaMQ.UDPCommunication
 
         public async Task SendPacket(Packet packet, Broker broker)
         {
-            var client = GetClient(ip, port);
+            var client = GetClient(broker.IpAdress, broker.Port);
             packet.ReturnPort = Setup.Port;
-            packet.SeqNo = GetOutGoingSeqNo(ip, port);
+            packet.SeqNo = GetOutGoingSeqNo(broker.IpAdress, broker.Port);
            await _guranteedDelivery.Send(new ExtendedPacketInformation(packet, UdpMessageType.Packet, client.Ip, client.Port));
 
             if (!Setup.NoDelayedAckClients.Contains(client.Id))

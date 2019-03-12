@@ -4,10 +4,10 @@ using HarakaMQ.UDPCommunication.Models;
 
 namespace HarakaMQ.UDPCommunication.Utils
 {
-    public class HarakaMQUDPConfiguration : IHarakaMQUDPConfiguration
+    public class DefaultHarakaMQUDPConfiguration : IHarakaMQUDPConfiguration
     {
         public int AcknowledgeMessageAfterNumberOfMessages { get; set; } = 100;
-        public int DelayedAcknowledgeWaitTimeInMiliseconds { get; set; } = 15;
+        public int DelayedAcknowledgeWaitTimeInMiliseconds { get; set; } = 500;
         public bool DisableIPv4Fragmentation { get; set; } = false;
         public IEnumerable<string> NoDelayedAcknowledgeClientIds { get; set; } = new List<string>();
         public int ListenPort { get; set; } = 12000;

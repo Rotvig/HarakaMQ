@@ -1,5 +1,6 @@
 using System;
 using System.Linq;
+using System.Threading.Tasks;
 using HarakaMQ.UDPCommunication.Events;
 using HarakaMQ.UDPCommunication.Interfaces;
 using HarakaMQ.UDPCommunication.Models;
@@ -11,7 +12,7 @@ namespace HarakaMQ.UDPCommunication
 {
     public class DynamicRouter : IDynamicRouter
     {
-        private HarakaMQUDPConfiguration _harakaMqudpConfiguration;
+        private IHarakaMQUDPConfiguration _harakaMqudpCopnfiguration;
         private IAutomaticRepeatReQuest _automaticRepeatReqeust;
         public event EventHandler<MessageReceivedEventArgs> QueueDeclare;
         public event EventHandler<PublishPacketReceivedEventArgs> PublishPackage;
@@ -20,24 +21,24 @@ namespace HarakaMQ.UDPCommunication
         public event EventHandler<MessageReceivedEventArgs> AntiEntropyMessage;
         public event EventHandler<MessageReceivedEventArgs> ClockSyncMessage;
         
-        public void Send(Message msg, string topic)
+        public void Send(Message msg, string topic, Broker broker = null)
         {
-            _automaticRepeatReqeust.Send(msg, GetBroker(), topic);
+            _automaticRepeatReqeust.Send(msg, topic, broker ?? GetBroker());
         }
 
-        public void SendAdministrationMessage(AdministrationMessage msg)
+        public void SendAdministrationMessage(AdministrationMessage msg, Broker broker = null)
         {
-            _automaticRepeatReqeust.SendAdministrationMessage(msg, GetBroker());
+            _automaticRepeatReqeust.SendAdministrationMessage(msg, broker ??  GetBroker());
         }
 
-        public void SendPackage(Packet packet)
+        public async Task SendPacket(Packet packet, Broker broker = null)
         {
-            _automaticRepeatReqeust.SendPacket(packet, GetBroker());
+            await _automaticRepeatReqeust.SendPacket(packet, broker ?? GetBroker());
         }
 
-        public void SetupConnection(HarakaMQUDPConfiguration harakaMqudpConfiguration)
+        public void SetupConnection(IHarakaMQUDPConfiguration harakaMqudpConfiguration)
         {
-            _harakaMqudpConfiguration = harakaMqudpConfiguration;
+            _harakaMqudpCopnfiguration = harakaMqudpConfiguration;
             Setup.SetupDi(harakaMqudpConfiguration);
             _automaticRepeatReqeust = Setup.container.GetInstance<IAutomaticRepeatReQuest>();
             _automaticRepeatReqeust.PublishPackage += PublishPackage;
@@ -51,11 +52,11 @@ namespace HarakaMQ.UDPCommunication
 
         private Broker GetBroker()
         {
-            if (_harakaMqudpConfiguration.Brokers.Any())
+            if (_harakaMqudpCopnfiguration.Brokers.Any())
             {
-                return _harakaMqudpConfiguration.Brokers.First();
+                return _harakaMqudpCopnfiguration.Brokers.First();
             }
-            throw new ArgumentException($"UDP configuration did not contain any brokers {JsonConvert.SerializeObject(_harakaMqudpConfiguration)}");
+            throw new ArgumentException($"UDP configuration did not contain any brokers {JsonConvert.SerializeObject(_harakaMqudpCopnfiguration)}");
         }
     }
 }

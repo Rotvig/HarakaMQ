@@ -1,7 +1,9 @@
-﻿namespace HarakaMQ.Client
+﻿using HarakaMQ.UDPCommunication.Utils;
+
+namespace HarakaMQ.Client
 {
     internal interface IConnectionFactory
     {
-        IConnection CreateConnection();
+        IConnection CreateConnection(IHarakaMQUDPConfiguration harakaMqudpConfiguration);
     }
 }

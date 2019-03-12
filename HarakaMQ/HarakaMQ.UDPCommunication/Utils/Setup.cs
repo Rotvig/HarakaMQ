@@ -23,7 +23,7 @@ namespace HarakaMQ.UDPCommunication.Utils
         public static int AckAfterNumber { get; set; }
         public static bool DontFragment { get; set; }
 
-        public static void SetupDi(HarakaMQUDPConfiguration harakaMqudpConfiguration)
+        public static void SetupDi(IHarakaMQUDPConfiguration harakaMqudpCopnfiguration)
         {
             ClientId = Ip + Port;
             OutgoingMessagesCS = "OutgoingMessages_" + ClientId;
@@ -33,10 +33,10 @@ namespace HarakaMQ.UDPCommunication.Utils
             container = new Container();
 
             // 2. Configure the container (register)
-            container.Register(() => harakaMqudpConfiguration, Lifestyle.Singleton);
+            container.Register(() => harakaMqudpCopnfiguration, Lifestyle.Singleton);
 
             ISerializer serializer = null;
-            if (harakaMqudpConfiguration.Logging.LogLevel.Default.ToLower() == "debug")
+            if (harakaMqudpCopnfiguration.Logging.LogLevel.Default.ToLower() == "debug")
             {
                 serializer = new UTF8JsonSerializer();
                 container.Register(() => serializer, Lifestyle.Singleton);
@@ -50,6 +50,7 @@ namespace HarakaMQ.UDPCommunication.Utils
             container.Register<ISchedular, Schedular>(Lifestyle.Singleton);
             container.Register<ISender, Sender>(Lifestyle.Singleton);
             container.Register<IReceiver, Receiver>(Lifestyle.Singleton);
+            container.Register<IDynamicRouter, DynamicRouter>(Lifestyle.Singleton);
             container.Register<IAutomaticRepeatReQuest, AutomaticRepeatReQuest>(Lifestyle.Singleton);
             container.Register<IGuranteedDelivery, GuranteedDelivery>(Lifestyle.Singleton);
             container.Register<IIdempotentReceiver, IdempotentReceiver>(Lifestyle.Singleton);

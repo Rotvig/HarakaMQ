@@ -10,8 +10,8 @@ namespace HarakaMQ.UDPCommunication
 {
     public class UdpCommunication : IUdpCommunication
     {
-        private IAutomaticRepeatReQuest _automaticRepeatReqeust;
-        private HarakaMQUDPConfiguration _harakaMqudpConfiguration;
+        private IDynamicRouter _dynamicRouter;
+        private IHarakaMQUDPConfiguration _harakaMqudpCopnfiguration;
 
         public event EventHandler<MessageReceivedEventArgs> QueueDeclare;
         public event EventHandler<PublishPacketReceivedEventArgs> PublishPackage;
@@ -20,45 +20,45 @@ namespace HarakaMQ.UDPCommunication
         public event EventHandler<MessageReceivedEventArgs> AntiEntropyMessage;
         public event EventHandler<MessageReceivedEventArgs> ClockSyncMessage;
 
-        public void Listen(HarakaMQUDPConfiguration harakaMqudpConfiguration)
+        public void Listen(IHarakaMQUDPConfiguration harakaMqudpConfiguration)
         {
-            _harakaMqudpConfiguration = harakaMqudpConfiguration;
-            Setup.SetupDi();
-            _automaticRepeatReqeust = Setup.container.GetInstance<IAutomaticRepeatReQuest>();
-            Setup.container.Register(() => harakaMqudpConfiguration, Lifestyle.Singleton);
+            _harakaMqudpCopnfiguration = harakaMqudpConfiguration;
+            Setup.SetupDi(_harakaMqudpCopnfiguration);
+            _dynamicRouter = Setup.container.GetInstance<IDynamicRouter>();
+            Setup.container.Register(() => _harakaMqudpCopnfiguration, Lifestyle.Singleton);
 
-            _automaticRepeatReqeust.PublishPackage += PublishPackage;
-            _automaticRepeatReqeust.Subscribe += Subscribe;
-            _automaticRepeatReqeust.Unsubscribe += Unsubscribe;
-            _automaticRepeatReqeust.QueueDeclare += QueueDeclare;
-            _automaticRepeatReqeust.AntiEntropyMessage += AntiEntropyMessage;
-            _automaticRepeatReqeust.ClockSyncMessage += ClockSyncMessage;
-            _automaticRepeatReqeust.Listen(harakaMqudpConfiguration.ListenPort);
+            _dynamicRouter.PublishPackage += PublishPackage;
+            _dynamicRouter.Subscribe += Subscribe;
+            _dynamicRouter.Unsubscribe += Unsubscribe;
+            _dynamicRouter.QueueDeclare += QueueDeclare;
+            _dynamicRouter.AntiEntropyMessage += AntiEntropyMessage;
+            _dynamicRouter.ClockSyncMessage += ClockSyncMessage;
+            _dynamicRouter.SetupConnection(_harakaMqudpCopnfiguration);
         }
 
         public void Send(Message msg, string topic)
         {
-            _automaticRepeatReqeust.Send(msg, topic);
+            _dynamicRouter.Send(msg, topic);
         }
 
         public void Send(Message msg, string ip, int port, string topic)
         {
-            _automaticRepeatReqeust.Send(msg, ip, port, topic);
+            _dynamicRouter.Send(msg, topic);
         }
 
         public async void SendPackage(Packet packet, string ip, int port)
         {
-            await _automaticRepeatReqeust.SendPacket(packet, ip, port);
+            await _dynamicRouter.SendPacket(packet);
         }
 
         public void SendAdministrationMessage(AdministrationMessage msg)
         {
-            _automaticRepeatReqeust.SendAdministrationMessage(msg);
+            _dynamicRouter.SendAdministrationMessage(msg);
         }
 
         public void SendAdministrationMessage(AdministrationMessage msg, string ip, int port)
         {
-            _automaticRepeatReqeust.SendAdministrationMessage(msg, ip, port);
+            _dynamicRouter.SendAdministrationMessage(msg);
         }
     }
 }

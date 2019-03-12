@@ -1,4 +1,6 @@
-﻿namespace HarakaMQ.Client
+﻿using HarakaMQ.UDPCommunication.Utils;
+
+namespace HarakaMQ.Client
 {
     public class ConnectionFactory : IConnectionFactory
     {
@@ -12,9 +14,9 @@
         public int ListenPort { get; set; }
         public bool DontFragment { get; set; } = false;
 
-        public IConnection CreateConnection()
+        public IConnection CreateConnection(IHarakaMQUDPConfiguration harakaMqudpConfiguration = null)
         {
-            return new Connection(HostName, Port, ListenPort);
+            return new Connection(harakaMqudpConfiguration);
         }
     }
 }

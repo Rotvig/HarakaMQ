@@ -7,7 +7,9 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Newtonsoft.Json" Version="11.0.2" />
+    <PackageReference Include="Microsoft.Extensions.Configuration" Version="3.0.0-preview3.19153.1" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Binder" Version="3.0.0-preview3.19153.1" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="3.0.0-preview3.19153.1" />
     <PackageReference Include="SimpleInjector" Version="4.3.0" />
     <PackageReference Include="Yort.Ntp.Portable" Version="1.0.14" />
   </ItemGroup>

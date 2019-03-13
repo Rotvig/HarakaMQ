@@ -13,11 +13,11 @@ namespace HarakaMQ.UDPCommunication
     {
         private readonly Socket _socket;
 
-        public Sender()
+        public Sender(HarakaMQUDPConfiguration harakaMqudpConfiguration)
         {
             _socket = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
 
-            if (Setup.DontFragment)
+            if (harakaMqudpConfiguration.DisableIPv4Fragmentation)
                 _socket.DontFragment = true;
         }
 

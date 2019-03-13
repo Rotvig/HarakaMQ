@@ -2,9 +2,9 @@
 
 namespace HarakaMQ.MessageBroker.Models
 {
-    public class BrokerInformation : Broker
+    public class MessageBrokerInformation : MessageBroker
     {
-        public BrokerInformation()
+        public MessageBrokerInformation()
         {
             Active = true;
         }
@@ -14,7 +14,6 @@ namespace HarakaMQ.MessageBroker.Models
         public int LastCommittedSeqNumberReceived { get; set; }
         public Guid AntiEntropyRoundScheduledTaskIdResponse { get; set; }
         public Guid AntiEntropyRoundScheduledTaskIdAnswer { get; set; }
-
 
         public void DeactivateBroker()
         {

@@ -1,6 +1,6 @@
 ﻿namespace HarakaMQ.MessageBroker.Models
 {
-    public class Broker
+    public class MessageBroker
     {
         public string Name { get; set; }
         public int PrimaryNumber { get; set; }

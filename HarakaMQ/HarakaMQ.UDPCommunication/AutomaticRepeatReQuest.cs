@@ -16,15 +16,17 @@ namespace HarakaMQ.UDPCommunication
         private static volatile bool _taskAlreadyRunning;
         private readonly IGuranteedDelivery _guranteedDelivery;
         private readonly IHarakaDb _harakaDb;
+        private readonly HarakaMQUDPConfiguration _harakaMqudpConfiguration;
         private readonly Dictionary<string, ConcurrentQueue<Tuple<string, Message>>> _messagesToPacket;
         private readonly ISchedular _schedular;
         private readonly Dictionary<string, SortedList<int, ExtendedPacketInformation>> _sortedReceivedMessages;
 
-        public AutomaticRepeatReQuest(IGuranteedDelivery guranteedDelivery, ISchedular schedular, IHarakaDb harakaDb)
+        public AutomaticRepeatReQuest(IGuranteedDelivery guranteedDelivery, ISchedular schedular, IHarakaDb harakaDb, HarakaMQUDPConfiguration harakaMqudpConfiguration)
         {
             _guranteedDelivery = guranteedDelivery;
             _schedular = schedular;
             _harakaDb = harakaDb;
+            _harakaMqudpConfiguration = harakaMqudpConfiguration;
             _sortedReceivedMessages = new Dictionary<string, SortedList<int, ExtendedPacketInformation>>();
             _messagesToPacket = new Dictionary<string, ConcurrentQueue<Tuple<string, Message>>>();
         }
@@ -64,22 +66,22 @@ namespace HarakaMQ.UDPCommunication
         public void SendAdministrationMessage(AdministrationMessage msg, Broker broker)
         {
             var client = GetClient(broker.IpAdress, broker.Port);
-            var package = new Packet(Setup.Port) {SeqNo = GetOutGoingSeqNo(broker.IpAdress, broker.Port), Type = PacketType.AdminitrationMessages, AdministrationMessage = msg};
+            var package = new Packet(_harakaMqudpConfiguration.ListenPort) {SeqNo = GetOutGoingSeqNo(broker.IpAdress, broker.Port), Type = PacketType.AdminitrationMessages, AdministrationMessage = msg};
             _guranteedDelivery.Send(new ExtendedPacketInformation(package, UdpMessageType.Packet, client.Ip, client.Port));
 
-            if (!Setup.NoDelayedAckClients.Contains(client.Id))
-                _schedular.TryScheduleDelayedAck(Setup.DelayedAckWaitTime, client.Id, SendDelayedAck);
+            if (!_harakaMqudpConfiguration.DisableDelayedAcknowledgeForClientWithIds.Contains(client.Id))
+                _schedular.TryScheduleDelayedAck(_harakaMqudpConfiguration.DelayedAcknowledgeWaitTimeInMiliseconds, client.Id, SendDelayedAck);
         }
 
         public async Task SendPacket(Packet packet, Broker broker)
         {
             var client = GetClient(broker.IpAdress, broker.Port);
-            packet.ReturnPort = Setup.Port;
+            packet.ReturnPort = _harakaMqudpConfiguration.ListenPort;
             packet.SeqNo = GetOutGoingSeqNo(broker.IpAdress, broker.Port);
            await _guranteedDelivery.Send(new ExtendedPacketInformation(packet, UdpMessageType.Packet, client.Ip, client.Port));
 
-            if (!Setup.NoDelayedAckClients.Contains(client.Id))
-                _schedular.TryScheduleDelayedAck(Setup.DelayedAckWaitTime, client.Id, SendDelayedAck);
+            if (!_harakaMqudpConfiguration.DisableDelayedAcknowledgeForClientWithIds.Contains(client.Id))
+                _schedular.TryScheduleDelayedAck(_harakaMqudpConfiguration.DelayedAcknowledgeWaitTimeInMiliseconds, client.Id, SendDelayedAck);
         }
 
         public void Listen(int port)
@@ -146,22 +148,22 @@ namespace HarakaMQ.UDPCommunication
                     }
                 }
 
-                var package = new Packet(Setup.Port, messagesToSend) {SeqNo = GetOutGoingSeqNo(ipAndPort.First(), int.Parse(ipAndPort.Last())), Type = PacketType.Messages, Topic = currentTopic};
+                var package = new Packet(_harakaMqudpConfiguration.ListenPort, messagesToSend) {SeqNo = GetOutGoingSeqNo(ipAndPort.First(), int.Parse(ipAndPort.Last())), Type = PacketType.Messages, Topic = currentTopic};
 
                 await _guranteedDelivery.Send(new ExtendedPacketInformation(package, UdpMessageType.Packet, client.Ip, client.Port));
 
-                if (!Setup.NoDelayedAckClients.Contains(client.Id))
-                    _schedular.TryScheduleDelayedAck(Setup.DelayedAckWaitTime, client.Id, SendDelayedAck);
+                if (!_harakaMqudpConfiguration.DisableDelayedAcknowledgeForClientWithIds.Contains(client.Id))
+                    _schedular.TryScheduleDelayedAck(_harakaMqudpConfiguration.DelayedAcknowledgeWaitTimeInMiliseconds, client.Id, SendDelayedAck);
             }
             _taskAlreadyRunning = false;
         }
 
         private void SendDelayedAck(string clientId)
         {
-            var package = new Packet(Setup.Port) {SeqNo = UpdateAndGetOutGoingSeqNo(clientId, out var client)};
+            var package = new Packet(_harakaMqudpConfiguration.ListenPort) {SeqNo = UpdateAndGetOutGoingSeqNo(clientId, out var client)};
 
             _guranteedDelivery.Send(new ExtendedPacketInformation(package, UdpMessageType.DelayedAck, client.Ip, client.Port));
-            _schedular.ScheduleRecurringResend(Setup.DelayedAckWaitTime, package.Id, _guranteedDelivery.ReSend);
+            _schedular.ScheduleRecurringResend(_harakaMqudpConfiguration.DelayedAcknowledgeWaitTimeInMiliseconds, package.Id, _guranteedDelivery.ReSend);
             //Debug.WriteLine("ClientId :" + Setup.ClientId + " Delayed Ack send at msg num: " + msg.SeqNo);
         }
 
@@ -224,7 +226,7 @@ namespace HarakaMQ.UDPCommunication
             foreach (var extendedPacketInformation in packetsToPublish)
             {
                 // Send ack after a set number of messages
-                if (extendedPacketInformation.Packet.SeqNo % Setup.AckAfterNumber == 0)
+                if (extendedPacketInformation.Packet.SeqNo % _harakaMqudpConfiguration.AcknowledgeMessageAfterNumberOfMessages == 0)
                     SendGarbageCollectMessage(extendedPacketInformation);
 
                 if (extendedPacketInformation.UdpMessageType == UdpMessageType.DelayedAck)
@@ -305,7 +307,7 @@ namespace HarakaMQ.UDPCommunication
             var msg = new UdpMessage
             {
                 SeqNo = seqNo,
-                ReturnPort = Setup.Port
+                ReturnPort = _harakaMqudpConfiguration.ListenPort
             };
 
             var client = GetClient(ip, port);
@@ -319,7 +321,7 @@ namespace HarakaMQ.UDPCommunication
             var msg = new UdpMessage
             {
                 SeqNo = extendedPacketInformation.Packet.SeqNo,
-                ReturnPort = Setup.Port
+                ReturnPort = _harakaMqudpConfiguration.ListenPort
             };
 
             _guranteedDelivery.SendUdpMessage(msg, UdpMessageType.GarbageCollect, extendedPacketInformation.Ip, extendedPacketInformation.Port);
@@ -330,7 +332,7 @@ namespace HarakaMQ.UDPCommunication
             var msg = new UdpMessage
             {
                 SeqNo = extendedPacketInformation.Packet.SeqNo,
-                ReturnPort = Setup.Port,
+                ReturnPort = _harakaMqudpConfiguration.ListenPort,
                 MessageId = extendedPacketInformation.Packet.Id,
                 InOrder = inOrder
             };

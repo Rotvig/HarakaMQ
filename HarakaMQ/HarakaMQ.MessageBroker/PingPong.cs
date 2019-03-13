@@ -14,10 +14,10 @@ namespace HarakaMQ.MessageBroker
     public class PingPong : IGossip
     {
         private readonly IAntiEntropy _antiEntropy;
-        private readonly List<BrokerInformation> _brokers = new List<BrokerInformation>();
+        private readonly IHarakaMQMessageBrokerConfiguration _harakaMqMessageBrokerConfiguration;
+        private readonly List<MessageBrokerInformation> _brokers = new List<MessageBrokerInformation>();
         private readonly ITimeSyncProtocol _timeSyncProtocol;
         private readonly ISerializer _serializer;
-        private readonly Utils.IJsonConfigurator _jsonConfigurator;
         private readonly int _latencyInMs;
         private readonly ISchedular _schedular;
         private readonly IUdpCommunication _udpCommunication;
@@ -27,18 +27,18 @@ namespace HarakaMQ.MessageBroker
         private int _lastAntiEntropyCommit;
         private bool _stopGossip;
 
-        public PingPong(IUdpCommunication udpCommunication, ISchedular schedular, IAntiEntropy antiEntropy, Utils.IJsonConfigurator jsonConfigurator, ITimeSyncProtocol timesyncProtocol, ISerializer serializer)
+        public PingPong(IUdpCommunication udpCommunication, ISchedular schedular, IAntiEntropy antiEntropy, IHarakaMQMessageBrokerConfiguration harakaMqMessageBrokerConfiguration, ITimeSyncProtocol timesyncProtocol, ISerializer serializer)
         {
             _schedular = schedular;
             _antiEntropy = antiEntropy;
-            _jsonConfigurator = jsonConfigurator;
+            _harakaMqMessageBrokerConfiguration = harakaMqMessageBrokerConfiguration;
             _timeSyncProtocol = timesyncProtocol;
             _serializer = serializer;
             _udpCommunication = udpCommunication;
-            _latencyInMs = _jsonConfigurator.GetSettings().AntiEntropyMilliseonds / 10; //Todo: find real latency
+            _latencyInMs = harakaMqMessageBrokerConfiguration.AntiEntropyMilliseonds / 10; //Todo: find real latency
 
-            foreach (var broker in _jsonConfigurator.GetSettings().Brokers)
-                _brokers.Add(new BrokerInformation
+            foreach (var broker in harakaMqMessageBrokerConfiguration.MessageBrokers)
+                _brokers.Add(new MessageBrokerInformation
                 {
                     Active = true,
                     PrimaryNumber = broker.PrimaryNumber,
@@ -112,12 +112,12 @@ namespace HarakaMQ.MessageBroker
         {
             _stopGossip = false;
 
-            if (_jsonConfigurator.GetSettings().PrimaryNumber != 1)
+            if (_harakaMqMessageBrokerConfiguration.PrimaryNumber != 1)
                 return;
             _timeSyncProtocol.StartTimeSync();
             _isPrimary = true;
 
-            if (_jsonConfigurator.GetSettings().RunInClusterSetup)
+            if (_harakaMqMessageBrokerConfiguration.RunInClusterSetup)
                 StartGossiping();
         }
 
@@ -128,7 +128,7 @@ namespace HarakaMQ.MessageBroker
 
         private void StartGossiping()
         {
-            _schedular.ScheduleTask(_jsonConfigurator.GetSettings().AntiEntropyMilliseonds, Guid.NewGuid(), () =>
+            _schedular.ScheduleTask(_harakaMqMessageBrokerConfiguration.AntiEntropyMilliseonds, Guid.NewGuid(), () =>
             {
                 if (_stopGossip) return;
                 _currentAntiEntropyRound++;
@@ -155,13 +155,13 @@ namespace HarakaMQ.MessageBroker
 
                 var administrationMessage = new AdministrationMessage(MessageType.AntiEntropy, _serializer.Serialize(new AntiEntropyMessage
                 {
-                    PrimaryNumber = _jsonConfigurator.GetSettings().PrimaryNumber,
+                    PrimaryNumber = _harakaMqMessageBrokerConfiguration.PrimaryNumber,
                     Tentative = tentativeMessagesToSend,
                     Committed = comittedMessagesToSend,
                     Publishers = _antiEntropy.GetPublishers(),
                     Subscribers = _antiEntropy.GetSubscribers(),
                     AntiEntropyRound = _currentAntiEntropyRound,
-                    Primary = _isPrimary ? _jsonConfigurator.GetSettings().PrimaryNumber : 0,
+                    Primary = _isPrimary ? _harakaMqMessageBrokerConfiguration.PrimaryNumber : 0,
                     AntiEntropyGarbageCollect = _currentAntiEntropyRound % 3 == 0 // GC every third round
                 }));
                 _udpCommunication.SendAdministrationMessage(administrationMessage, broker.Ipaddress, broker.Port);
@@ -184,22 +184,22 @@ namespace HarakaMQ.MessageBroker
 
             _udpCommunication.SendAdministrationMessage(new AdministrationMessage(MessageType.AntiEntropy, _serializer.Serialize(new AntiEntropyMessage
             {
-                PrimaryNumber = _jsonConfigurator.GetSettings().PrimaryNumber,
+                PrimaryNumber = _harakaMqMessageBrokerConfiguration.PrimaryNumber,
                 Tentative = _antiEntropy.GetTentativeMessagesToSendForPrimaryBroker(_currentAntiEntropyRound),
                 Publishers = _antiEntropy.GetPublishers(),
                 Subscribers = _antiEntropy.GetSubscribers(),
                 AntiEntropyRound = _currentAntiEntropyRound,
-                Primary = _isPrimary ? _jsonConfigurator.GetSettings().PrimaryNumber : 0
+                Primary = _isPrimary ? _harakaMqMessageBrokerConfiguration.PrimaryNumber : 0
             })), primaryBroker.Ipaddress, primaryBroker.Port);
             //StartWaitForPrimaryBroker(primaryBroker);
         }
 
-        private void StartWaitForPrimaryBroker(BrokerInformation primaryBroker, int extraTime = 0)
+        private void StartWaitForPrimaryBroker(MessageBrokerInformation primaryMessageBroker, int extraTime = 0)
         {
-            _schedular.CancelTask(primaryBroker.AntiEntropyRoundScheduledTaskIdResponse);
-            primaryBroker.AntiEntropyRoundScheduledTaskIdResponse = Guid.NewGuid();
-            _schedular.ScheduleTask(_jsonConfigurator.GetSettings().AntiEntropyMilliseonds + _latencyInMs + extraTime,
-                primaryBroker.AntiEntropyRoundScheduledTaskIdResponse, () =>
+            _schedular.CancelTask(primaryMessageBroker.AntiEntropyRoundScheduledTaskIdResponse);
+            primaryMessageBroker.AntiEntropyRoundScheduledTaskIdResponse = Guid.NewGuid();
+            _schedular.ScheduleTask(_harakaMqMessageBrokerConfiguration.AntiEntropyMilliseonds + _latencyInMs + extraTime,
+                primaryMessageBroker.AntiEntropyRoundScheduledTaskIdResponse, () =>
                 {
                     //Todo: BroadCast Primary broker down to sub/pub/brokers - Round 1
                     //Start a new schedular which waites for the next primary to broadcast - Round 2

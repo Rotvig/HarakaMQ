@@ -31,7 +31,7 @@ namespace HarakaMQ.MessageBroker.Utils
             _stopwatch.Start();
         }
 
-        public void StartTimeSync(List<BrokerInformation> brokersToSync)
+        public void StartTimeSync(List<MessageBrokerInformation> brokersToSync)
         {
             //Todo: send clock sync receivedMessage T1 to brokers
             foreach (var brokerInformation in brokersToSync)

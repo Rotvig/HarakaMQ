@@ -13,9 +13,9 @@ namespace HarakaMQ.MessageBroker
     public class AntiEntropy : IAntiEntropy
     {
         private readonly IHarakaDb _harakaDb;
-        private readonly IJsonConfigurator _jsonConfigurator;
         private readonly ISmartQueueFactory _smartQueueFactory;
         private readonly IMergeProcedure _mergeProcedure;
+        private readonly HarakaMqMessageBrokerConfiguration _harakaMqMessageBrokerConfiguration;
         private readonly List<Publisher> _publishers = new List<Publisher>();
         private List<ISmartQueue> _queues;
         private volatile List<Subscriber> _subscribers = new List<Subscriber>();
@@ -24,11 +24,11 @@ namespace HarakaMQ.MessageBroker
         private List<PublishPacketReceivedEventArgs> _ownTentativeMessages = new List<PublishPacketReceivedEventArgs>();
         private readonly object _messagesLock = new object();
 
-        public AntiEntropy(IHarakaDb harakaDb, IMergeProcedure mergeProcedure, IJsonConfigurator jsonConfigurator, ISmartQueueFactory smartQueueFactory)
+        public AntiEntropy(IHarakaDb harakaDb, IMergeProcedure mergeProcedure, HarakaMqMessageBrokerConfiguration harakaMqMessageBrokerConfiguration, ISmartQueueFactory smartQueueFactory)
         {
             _harakaDb = harakaDb;
             _mergeProcedure = mergeProcedure;
-            _jsonConfigurator = jsonConfigurator;
+            _harakaMqMessageBrokerConfiguration = harakaMqMessageBrokerConfiguration;
             _smartQueueFactory = smartQueueFactory;
             Initialize();
             //Fetch all pub
@@ -150,20 +150,20 @@ namespace HarakaMQ.MessageBroker
 
         public void SubScribeMessageReceived(MessageReceivedEventArgs message)
         {
-            var subscriber = new Subscriber(message.IpAddress, message.Port, _jsonConfigurator.GetSettings().PrimaryNumber, message.SenderClient);
+            var subscriber = new Subscriber(message.IpAddress, message.Port, _harakaMqMessageBrokerConfiguration.PrimaryNumber, message.SenderClient);
             _queues.Find(x => x.GetTopicId() == message.AdministrationMessage.Topic).AddEvent(new Event(subscriber, EventType.AddSubscriber));
             _subscribers.Add(subscriber);
         }
 
         public void PublishMessageReceived(PublishPacketReceivedEventArgs message)
         {
-            if (_jsonConfigurator.GetSettings().RunInClusterSetup)
+            if (_harakaMqMessageBrokerConfiguration.RunInClusterSetup)
             {
                 if (!_publishers.Any(x => x.Ip == message.IpAddress && x.Port == message.Port))
                     lock (_harakaDb.GetLock(Setup.PublisherCs))
                     {
                         var pubs = _harakaDb.GetObjects<Publisher>(Setup.PublisherCs);
-                        var publisher = new Publisher(message.IpAddress, message.Port, _jsonConfigurator.GetSettings().PrimaryNumber, message.SenderClient);
+                        var publisher = new Publisher(message.IpAddress, message.Port, _harakaMqMessageBrokerConfiguration.PrimaryNumber, message.SenderClient);
                         pubs.Add(publisher);
                         _harakaDb.StoreObject(Setup.PublisherCs, pubs);
                         _publishers.Add(publisher);

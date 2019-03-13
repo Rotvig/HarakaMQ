@@ -3,6 +3,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using HarakaMQ.MessageBroker.Interfaces;
+using HarakaMQ.MessageBroker.Models;
 using HarakaMQ.MessageBroker.Utils;
 using HarakaMQ.UDPCommunication.Events;
 using HarakaMQ.UDPCommunication.Interfaces;
@@ -30,17 +31,19 @@ namespace HarakaMQ.MessageBroker
 
         private static void Initialize(IConfigurationRoot configurationRoot)
         {
-            var harakaUdpConfiguration = new DefaultHarakaMQUDPConfiguration();
+            var harakaUdpConfiguration = new HarakaMQUDPConfiguration();
+            var harakaMessageBrokerConfiguration = new HarakaMqMessageBrokerConfiguration();
             configurationRoot.Bind(harakaUdpConfiguration);
+            configurationRoot.Bind(harakaMessageBrokerConfiguration);
 
+            harakaUdpConfiguration.DisableDelayedAcknowledgeForClientWithIds = harakaUdpConfiguration.Brokers.Select(broker => broker.Id).ToList();
             Setup.Initialize();
             _udpCommunication = Setup.container.GetInstance<IUdpCommunication>();
-            _udpCommunication.SetUpUdpComponent(10, 2000, false, Setup.container.GetInstance<IJsonConfigurator>().GetSettings().Brokers.Select(x => x.Ipaddress + x.Port).ToArray());
             _udpCommunication.QueueDeclare += QueueDeclareMessageRecieved;
             _udpCommunication.PublishPackage += PublishMessageRecieved;
             _udpCommunication.Subscribe += SubsribeMessageRecieved;
             _udpCommunication.AntiEntropyMessage += AntiEntropyMessageMessageReceived;
-            _udpCommunication.SetUpUdpComponent(Setup.container.GetInstance<IJsonConfigurator>().GetSettings().BrokerPort);
+            _udpCommunication.Listen(harakaUdpConfiguration);
             _gossip = Setup.container.GetInstance<IGossip>();
             _gossip.StartGossip();
         }

@@ -11,21 +11,14 @@ namespace HarakaMQ.UDPCommunication.Utils
         public static Container container;
 
         public static int MaxPayloadSize = 60203; // 65,507-4 (4 is for the enum added at the senderMessage)
-
-        public static List<string> NoDelayedAckClients = new List<string>();
         public static string ClientId { get; private set; }
         public static string OutgoingMessagesCS { get; set; }
         public static string IngoingMessagesCS { get; set; }
         public static string ClientsCS { get; set; }
-        public static int Port { get; set; }
-        public static string Ip { get; set; }
-        public static int DelayedAckWaitTime { get; set; }
-        public static int AckAfterNumber { get; set; }
-        public static bool DontFragment { get; set; }
-
-        public static void SetupDi(IHarakaMQUDPConfiguration harakaMqudpCopnfiguration)
+        
+        public static void SetupDi(HarakaMQUDPConfiguration harakaMqudpCopnfiguration)
         {
-            ClientId = Ip + Port;
+            ClientId = harakaMqudpCopnfiguration.IpAdress + harakaMqudpCopnfiguration.ListenPort;
             OutgoingMessagesCS = "OutgoingMessages_" + ClientId;
             IngoingMessagesCS = "InGoingMessages_" + ClientId;
             ClientsCS = "Clients_" + ClientId;
@@ -38,13 +31,13 @@ namespace HarakaMQ.UDPCommunication.Utils
             ISerializer serializer = null;
             if (harakaMqudpCopnfiguration.Logging.LogLevel.Default.ToLower() == "debug")
             {
-                serializer = new UTF8JsonSerializer();
+                serializer = new HarakaUTF8JsonSerializer();
                 container.Register(() => serializer, Lifestyle.Singleton);
             }
             else
             {
-                serializer = new MessagePackSerializer();
-                container.Register(() => serializer);
+                serializer = new HarakaMessagePackSerializer();
+                container.Register(() => serializer, Lifestyle.Singleton);
             }
 
             container.Register<ISchedular, Schedular>(Lifestyle.Singleton);

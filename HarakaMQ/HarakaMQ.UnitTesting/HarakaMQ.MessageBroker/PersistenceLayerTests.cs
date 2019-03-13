@@ -1,23 +1,30 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using HarakaMQ.DB;
 using HarakaMQ.MessageBroker;
 using HarakaMQ.MessageBroker.Events;
 using HarakaMQ.MessageBroker.Models;
-using HarakaMQ.UnitTests.Utils;
 using Shouldly;
 using Xunit;
+using HarakaMQ.Shared;
 
 namespace HarakaMQ.UnitTests.HarakaMQ.MessageBroker
 {
-    public class PersistenceLayerTests : UnitTestExtension
+    public class PersistenceLayerTests : IDisposable
     {
         public PersistenceLayerTests()
         {
+            var serializer = new HarakaMessagePackSerializer();
+            HarakaDb = new HarakaDb(serializer, "Test" + Guid.NewGuid());
             fileName = HarakaDb.CreatedFiles().First();
             _persistenceLayer = new PersistenceLayer(HarakaDb, fileName);
         }
+        public IHarakaDb HarakaDb;
 
         private readonly PersistenceLayer _persistenceLayer;
+
         private readonly string fileName;
 
         [Fact]
@@ -63,6 +70,12 @@ namespace HarakaMQ.UnitTests.HarakaMQ.MessageBroker
             var item2 = _persistenceLayer.GetNextEvent(topic);
             item2.EventType.ShouldBe(EventType.AddSubscriber);
             item2.Subscriber.Ip.ShouldBe("foo2");
+        }
+
+        public void Dispose()
+        {
+            foreach (var fileName in HarakaDb.CreatedFiles())
+                File.Delete(fileName + ".db");
         }
     }
 }

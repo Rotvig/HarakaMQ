@@ -7,6 +7,7 @@ using HarakaMQ.DB;
 using HarakaMQ.UDPCommunication;
 using HarakaMQ.UDPCommunication.Interfaces;
 using HarakaMQ.UDPCommunication.Models;
+using HarakaMQ.UDPCommunication.Utils;
 using HarakaMQ.UnitTests.Utils;
 using Shouldly;
 using Xunit;
@@ -16,16 +17,12 @@ namespace HarakaMQ.UnitTests.HarakaMQ.UDPCommunication
 {
     public class AutomaticRepeatReQuestTests
     {
-        public AutomaticRepeatReQuestTests()
-        {
-            Setup.AckAfterNumber = 50;
-        }
-
         [Theory, AutoFakeItEasyDataAttributeWithExtendedPacketInformationSpecimenBuilder]
         public async void CanHandleRecievedMessageOfTypeMessage(
             [Frozen] IGuranteedDelivery guranteedDelivery,
             [Frozen] ISchedular schedular,
             [Frozen] IHarakaDb harakaDb,
+            [Frozen] HarakaMQUDPConfiguration harakaMqudpConfiguration,
             AutomaticRepeatReQuest sut,
             ExtendedPacketInformation extendedPacketInformation,
             Client client)
@@ -48,6 +45,7 @@ namespace HarakaMQ.UnitTests.HarakaMQ.UDPCommunication
             [Frozen] IGuranteedDelivery guranteedDelivery,
             [Frozen] ISchedular schedular,
             [Frozen] IHarakaDb harakaDb,
+            [Frozen] IHarakaMQUDPConfiguration harakaMqudpConfiguration,
             AutomaticRepeatReQuest sut,
             ExtendedPacketInformation extendedPacketInformation1,
             ExtendedPacketInformation extendedPacketInformation2,
@@ -116,13 +114,14 @@ namespace HarakaMQ.UnitTests.HarakaMQ.UDPCommunication
             [Frozen] IHarakaDb harakaDb,
             AutomaticRepeatReQuest sut,
             Client client,
-            Message message)
+            Message message,
+            Broker broker)
         {
             A.CallTo(() => harakaDb.GetObjects<Client>(A<string>.Ignored)).Returns(new List<Client> {client});
 
-           await sut.Send(message, client.Ip, client.Port, "topic");
+           await sut.Send(message, "topic", broker);
 
-            A.CallTo(() => guranteedDelivery.Send(A<ExtendedPacketInformation>.That.Matches(x => x.Ip == client.Ip && x.Port == client.Port))).MustHaveHappened();
+            A.CallTo(() => guranteedDelivery.Send(A<ExtendedPacketInformation>.That.Matches(x => x.Ip == broker.IpAdress && x.Port == broker.Port))).MustHaveHappened();
         }
     }
 }

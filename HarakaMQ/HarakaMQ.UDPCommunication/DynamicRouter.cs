@@ -12,7 +12,7 @@ namespace HarakaMQ.UDPCommunication
 {
     public class DynamicRouter : IDynamicRouter
     {
-        private IHarakaMQUDPConfiguration _harakaMqudpCopnfiguration;
+        private HarakaMQUDPConfiguration _harakaMqudpCopnfiguration;
         private IAutomaticRepeatReQuest _automaticRepeatReqeust;
         public event EventHandler<MessageReceivedEventArgs> QueueDeclare;
         public event EventHandler<PublishPacketReceivedEventArgs> PublishPackage;
@@ -36,7 +36,7 @@ namespace HarakaMQ.UDPCommunication
             await _automaticRepeatReqeust.SendPacket(packet, broker ?? GetBroker());
         }
 
-        public void SetupConnection(IHarakaMQUDPConfiguration harakaMqudpConfiguration)
+        public void SetupConnection(HarakaMQUDPConfiguration harakaMqudpConfiguration)
         {
             _harakaMqudpCopnfiguration = harakaMqudpConfiguration;
             Setup.SetupDi(harakaMqudpConfiguration);

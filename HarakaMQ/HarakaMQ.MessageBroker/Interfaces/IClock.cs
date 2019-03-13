@@ -7,7 +7,7 @@ namespace HarakaMQ.MessageBroker.Interfaces
 {
     public interface IClock
     {
-        void StartTimeSync(List<BrokerInformation> brokersToSync);
+        void StartTimeSync(List<MessageBrokerInformation> brokersToSync);
         TimeSpan ElapsedTimeSpan();
         void ClockSyncMessageReceived(MessageReceivedEventArgs receivedMessage);
     }

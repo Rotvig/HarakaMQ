@@ -1,17 +1,18 @@
 ﻿using HarakaMQ.MessageBroker.Interfaces;
 using System;
+using HarakaMQ.MessageBroker.Models;
 
 namespace HarakaMQ.MessageBroker.Utils
 {
     public class NTP : ITimeSyncProtocol
     {
         private DateTime _accurateTime;
-        private string _serverAddress;
-        private Yort.Ntp.NtpClient ntpClient;
+        private readonly string _serverAddress;
+        private Yort.Ntp.NtpClient _ntpClient;
 
-        public NTP(IJsonConfigurator settings)
+        public NTP(HarakaMqMessageBrokerConfiguration harakaMqMessageBrokerConfiguration)
         {
-            _serverAddress = settings.GetSettings().TimeSyncServerAddress;
+            _serverAddress = harakaMqMessageBrokerConfiguration.TimeSyncServerAddress;
         }
         public DateTime GetTime()
         {
@@ -20,8 +21,8 @@ namespace HarakaMQ.MessageBroker.Utils
 
         public async void StartTimeSync()
         {
-            ntpClient = new Yort.Ntp.NtpClient(_serverAddress);
-            _accurateTime = await ntpClient.RequestTimeAsync();
+            _ntpClient = new Yort.Ntp.NtpClient(_serverAddress);
+            _accurateTime = await _ntpClient.RequestTimeAsync();
         }
 
         #region IDisposable Support

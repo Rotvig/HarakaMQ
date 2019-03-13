@@ -22,10 +22,9 @@ namespace HarakaMQ.MessageBroker.Utils
             container = new Container();
 
             // 2. Configure the container (register)
-            var serializer = new UTF8JsonSerializer();
+            var serializer = new HarakaUTF8JsonSerializer();
             container.Register<ISerializer>(() => serializer, Lifestyle.Singleton);
             container.Register<ISmartQueueFactory, SmartQueueFactory>(Lifestyle.Singleton);
-            container.Register<IJsonConfigurator, JsonConfigurator>(Lifestyle.Singleton);
             container.Register<IUdpCommunication, UdpCommunication>(Lifestyle.Singleton);
             container.Register<IMergeProcedure, MergeProcedure>(Lifestyle.Singleton);
             container.Register<ISchedular, Schedular>(Lifestyle.Singleton);

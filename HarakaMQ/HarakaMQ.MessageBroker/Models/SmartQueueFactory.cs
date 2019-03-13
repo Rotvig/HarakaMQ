@@ -13,14 +13,14 @@ namespace HarakaMQ.MessageBroker.Models
         private readonly IHarakaDb _harakaDb;
         private readonly IUdpCommunication _udpCommunication;
         private readonly IPersistenceLayer _persistenceLayer;
-        private readonly IJsonConfigurator _jsonConfigurator;
+        private readonly HarakaMqMessageBrokerConfiguration _harakaMqMessageBrokerConfiguration;
 
-        public SmartQueueFactory(IHarakaDb harakaDb, IUdpCommunication udpCommunication, IPersistenceLayer persistenceLayer, IJsonConfigurator jsonConfigurator)
+        public SmartQueueFactory(IHarakaDb harakaDb, IUdpCommunication udpCommunication, IPersistenceLayer persistenceLayer, HarakaMqMessageBrokerConfiguration harakaMqMessageBrokerConfiguration)
         {
             _harakaDb = harakaDb;
             _udpCommunication = udpCommunication;
             _persistenceLayer = persistenceLayer;
-            _jsonConfigurator = jsonConfigurator;
+            _harakaMqMessageBrokerConfiguration = harakaMqMessageBrokerConfiguration;
         }
         
         public List<ISmartQueue> InitializeSmartQueues(EventHandler<List<Subscriber>> smartQueueOnSubscribersHasBeenUpdated)
@@ -29,7 +29,7 @@ namespace HarakaMQ.MessageBroker.Models
             //Initialize all existing queues on startup
             foreach (var topic in _harakaDb.TryGetObjects<Topic>("Topics"))
             {
-                var smartQueue = new SmartQueue(_udpCommunication, _persistenceLayer, _jsonConfigurator, topic);
+                var smartQueue = new SmartQueue(_udpCommunication, _persistenceLayer, _harakaMqMessageBrokerConfiguration, topic);
                 smartQueue.SubscribersHasBeenUpdated += smartQueueOnSubscribersHasBeenUpdated;
                 smartQueues.Add(smartQueue);
             }
@@ -52,7 +52,7 @@ namespace HarakaMQ.MessageBroker.Models
                 _harakaDb.StoreObject("Topics", topics);
             }
 
-            var smartQueue = new SmartQueue(Setup.container.GetInstance<IUdpCommunication>(), Setup.container.GetInstance<IPersistenceLayer>(), Setup.container.GetInstance<IJsonConfigurator>(), topic);
+            var smartQueue = new SmartQueue(Setup.container.GetInstance<IUdpCommunication>(), Setup.container.GetInstance<IPersistenceLayer>(), _harakaMqMessageBrokerConfiguration, topic);
             smartQueue.SubscribersHasBeenUpdated += smartQueueOnSubscribersHasBeenUpdated;
             return smartQueue;
         }

@@ -14,18 +14,18 @@ namespace HarakaMQ.MessageBroker
     public class SmartQueue : ISmartQueue, IDisposable
     {
         private readonly IPersistenceLayer _db;
-        private readonly IJsonConfigurator _jsonConfigurator;
+        private readonly HarakaMqMessageBrokerConfiguration _harakaMqMessageBrokerConfiguration;
         private readonly Topic _topic;
         private readonly IUdpCommunication _udpComm;
         private Task _eventConsumerTask;
         private bool _stopConsuming;
 
-        public SmartQueue(IUdpCommunication udpComm, IPersistenceLayer db, IJsonConfigurator jsonConfigurator, Topic topic)
+        public SmartQueue(IUdpCommunication udpComm, IPersistenceLayer db, HarakaMqMessageBrokerConfiguration harakaMqMessageBrokerConfiguration, Topic topic)
         {
             _udpComm = udpComm;
             _topic = topic;
             _db = db;
-            _jsonConfigurator = jsonConfigurator;
+            _harakaMqMessageBrokerConfiguration = harakaMqMessageBrokerConfiguration;
             _db.EventAdded += EventAdded;
             // Start Consuming messages if any
             if (_topic.Events.Count > 0)
@@ -111,7 +111,7 @@ namespace HarakaMQ.MessageBroker
         private void PublishCommittedMessage(PublishPacketReceivedEventArgs message)
         {
             _topic.Subscribers = _db.GetSubScribers(_topic);
-            foreach (var sub in _topic.Subscribers.Where(x => x.AttachedBroker == _jsonConfigurator.GetSettings().PrimaryNumber))
+            foreach (var sub in _topic.Subscribers.Where(x => x.AttachedBroker == _harakaMqMessageBrokerConfiguration.PrimaryNumber))
                 _udpComm.SendPackage(message.Packet, sub.Ip, sub.Port);
         }
 
@@ -120,7 +120,7 @@ namespace HarakaMQ.MessageBroker
         {
             _topic.Subscribers = _db.GetSubScribers(_topic);
             foreach (var messageReceivedEventArgse in messages)
-            foreach (var sub in _topic.Subscribers.Where(x => !x.ReceiveTentativeMessages && x.AttachedBroker == _jsonConfigurator.GetSettings().PrimaryNumber))
+            foreach (var sub in _topic.Subscribers.Where(x => !x.ReceiveTentativeMessages && x.AttachedBroker == _harakaMqMessageBrokerConfiguration.PrimaryNumber))
                 if (messageReceivedEventArgse.Packet.GlobalSequenceNumber > sub.GlobalSequenceNumberLastReceived)
                 {
                     _udpComm.SendPackage(messageReceivedEventArgse.Packet, sub.Ip, sub.Port);
@@ -128,7 +128,7 @@ namespace HarakaMQ.MessageBroker
                 }
 
             _db.UpdateSubscribers(_topic);
-            SubscribersHasBeenUpdated?.Invoke(this, _topic.Subscribers.Where(x => x.AttachedBroker == _jsonConfigurator.GetSettings().PrimaryNumber).ToList());
+            SubscribersHasBeenUpdated?.Invoke(this, _topic.Subscribers.Where(x => x.AttachedBroker == _harakaMqMessageBrokerConfiguration.PrimaryNumber).ToList());
         }
 
         private void PublishAndAddTentativeMessages(IEnumerable<PublishPacketReceivedEventArgs> messages)
@@ -138,7 +138,7 @@ namespace HarakaMQ.MessageBroker
             //PublishPackage tentative messages
             //Todo: Dont send messages to one that has already received it
             foreach (var messageReceivedEventArgse in messages)
-            foreach (var sub in _topic.Subscribers.Where(x => x.ReceiveTentativeMessages && x.AttachedBroker == _jsonConfigurator.GetSettings().PrimaryNumber))
+            foreach (var sub in _topic.Subscribers.Where(x => x.ReceiveTentativeMessages && x.AttachedBroker == _harakaMqMessageBrokerConfiguration.PrimaryNumber))
                 _udpComm.SendPackage(messageReceivedEventArgse.Packet, sub.Ip, sub.Port);
         }
 
@@ -147,7 +147,7 @@ namespace HarakaMQ.MessageBroker
             //Todo: store tentative messages
             _topic.Subscribers = _db.GetSubScribers(_topic);
             //Todo: Dont send messages to one that has already received it
-            foreach (var sub in _topic.Subscribers.Where(x => x.ReceiveTentativeMessages && x.AttachedBroker == _jsonConfigurator.GetSettings().PrimaryNumber))
+            foreach (var sub in _topic.Subscribers.Where(x => x.ReceiveTentativeMessages && x.AttachedBroker == _harakaMqMessageBrokerConfiguration.PrimaryNumber))
                 _udpComm.SendPackage(message.Packet, sub.Ip, sub.Port);
         }
 

@@ -4,6 +4,6 @@ namespace HarakaMQ.UDPCommunication.Models
     {
         public string IpAdress { get; set; }
         public int Port { get; set; }
-
+        public string Id => IpAdress + Port;
     }
 }

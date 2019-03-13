@@ -10,6 +10,6 @@ namespace HarakaMQ.UDPCommunication.Interfaces
         void SendAdministrationMessage(AdministrationMessage msg);
         void SendAdministrationMessage(AdministrationMessage msg, string ip, int port);
         void SendPackage(Packet packet, string ip, int port);
-        void Listen(IHarakaMQUDPConfiguration harakaMqudpConfiguration);
+        void Listen(HarakaMQUDPConfiguration harakaMqudpConfiguration);
     }
 }

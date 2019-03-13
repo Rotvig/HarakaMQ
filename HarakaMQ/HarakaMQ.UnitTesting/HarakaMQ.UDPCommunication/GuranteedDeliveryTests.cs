@@ -6,6 +6,7 @@ using System.Net.Sockets;
 using AutoFixture.Xunit2;
 using FakeItEasy;
 using HarakaMQ.DB;
+using HarakaMQ.Shared;
 using HarakaMQ.UDPCommunication;
 using HarakaMQ.UDPCommunication.Interfaces;
 using HarakaMQ.UDPCommunication.Models;
@@ -15,38 +16,40 @@ using Xunit;
 
 namespace HarakaMQ.UnitTests.HarakaMQ.UDPCommunication
 {
-    public class GuranteedDeliveryTests : UnitTestExtension
+    public class GuranteedDeliveryTests
     {
         [Theory, AutoFakeItEasyData]
         public void CanHandleExtendedMessageInformationAndDeserializeMessageWhenItIsAMessage(
             [Frozen] IReceiver receiver,
             [Frozen] IIdempotentReceiver idempotentReceiver,
             [Frozen] ISender sender,
+            [Frozen] ISerializer serializer,
             [Frozen] IHarakaDb harakaDb,
             GuranteedDelivery sut,
             [Frozen]Packet packet,
             SenderMessage senderMessage,
-            ExtendedPacketInformation extendedPacketInformation)
+            ExtendedPacketInformation extendedPacketInformation,
+            UdpReceiveResult udpReceiveResult)
         {
-            var ip = "192.1.1.1";
-            var port = 1234;
-            packet.ReturnPort = port;
-            var jsonBytes = MessagePack.MessagePackSerializer.Serialize(new SenderMessage { Type = UdpMessageType.Packet, Body = MessagePack.MessagePackSerializer.Serialize(packet) });
-            var udpResult = new UdpReceiveResult(jsonBytes, new IPEndPoint(IPAddress.Parse(ip), port));
+            packet.ReturnPort = udpReceiveResult.RemoteEndPoint.Port;
+            senderMessage.Type = UdpMessageType.Packet;
+            extendedPacketInformation.Ip = udpReceiveResult.RemoteEndPoint.Address.ToString();
+            extendedPacketInformation.Port = udpReceiveResult.RemoteEndPoint.Port;
 
+            A.CallTo(() => serializer.Deserialize<SenderMessage>(udpReceiveResult.Buffer)).Returns(senderMessage);
+            A.CallTo(() => serializer.Deserialize<Packet>(senderMessage.Body)).Returns(packet);
             A.CallTo(() => harakaDb.GetObjects<ExtendedPacketInformation>(A<string>.Ignored)).Returns(new List<ExtendedPacketInformation>{extendedPacketInformation});
             A.CallTo(() => idempotentReceiver.VerifyPacket(A<Packet>.Ignored)).Returns(true);
 
-            
             sut.MessageReceived += (object o, ExtendedPacketInformation message) =>
             {
-                message.Ip.ShouldBe(ip);
-                message.Port.ShouldBe(port);
+                message.Ip.ShouldBe(extendedPacketInformation.Ip);
+                message.Port.ShouldBe(extendedPacketInformation.Port);
                 message.UdpMessageType.ShouldBe(UdpMessageType.Packet);
                 message.Packet.Id.ShouldBe(packet.Id);
             };
             
-            sut.HandleExtendedMessageInformation(udpResult);
+            sut.HandleExtendedMessageInformation(udpReceiveResult);
 
             A.CallTo(() => harakaDb.StoreObject(A<string>.Ignored, A<List<ExtendedPacketInformation>>.Ignored)).MustHaveHappened();
         }

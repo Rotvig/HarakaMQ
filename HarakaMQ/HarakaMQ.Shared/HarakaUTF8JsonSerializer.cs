@@ -2,7 +2,7 @@ using Utf8Json;
 
 namespace HarakaMQ.Shared
 {
-    public class UTF8JsonSerializer : ISerializer
+    public class HarakaUTF8JsonSerializer : ISerializer
     {
         public byte[] Serialize<T>(T content)
         {

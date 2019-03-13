@@ -9,6 +9,7 @@ using HarakaMQ.MessageBroker.Models;
 using HarakaMQ.MessageBroker.Utils;
 using HarakaMQ.UDPCommunication.Events;
 using HarakaMQ.UDPCommunication.Models;
+using HarakaMQ.UDPCommunication.Utils;
 using HarakaMQ.UnitTests.Utils;
 using Shouldly;
 using Xunit;
@@ -22,7 +23,6 @@ namespace HarakaMQ.UnitTests.HarakaMQ.MessageBroker
         public void CanGetCommittedMessagesToSend(
             [Frozen] IHarakaDb harakaDb,
             [Frozen] IMergeProcedure mergeProcedure,
-            [Frozen] IJsonConfigurator jsonConfigurator,
             [Frozen] ISmartQueueFactory smartQueueFactory,
             AntiEntropy sut)
         {
@@ -48,7 +48,6 @@ namespace HarakaMQ.UnitTests.HarakaMQ.MessageBroker
         public void CanGetCommittedToSendOverMultipleRounds(
             [Frozen] IHarakaDb harakaDb,
             [Frozen] IMergeProcedure mergeProcedure,
-            [Frozen] IJsonConfigurator jsonConfigurator,
             [Frozen] ISmartQueueFactory smartQueueFactory,
             AntiEntropy sut)
         {
@@ -85,7 +84,6 @@ namespace HarakaMQ.UnitTests.HarakaMQ.MessageBroker
         public void CanGetTentativeMessagesToSendForNonPrimaryBrokers(
             [Frozen] IHarakaDb harakaDb,
             [Frozen] IMergeProcedure mergeProcedure,
-            [Frozen] IJsonConfigurator jsonConfigurator,
             [Frozen] ISmartQueueFactory smartQueueFactory,
             AntiEntropy sut)
         {           
@@ -108,7 +106,6 @@ namespace HarakaMQ.UnitTests.HarakaMQ.MessageBroker
         public void CanGetTentativeMessagesToSendForNonPrimaryBrokersOverMultipleRounds(
             [Frozen] IHarakaDb harakaDb,
             [Frozen] IMergeProcedure mergeProcedure,
-            [Frozen] IJsonConfigurator jsonConfigurator,
             [Frozen] ISmartQueueFactory smartQueueFactory,
             AntiEntropy sut)
         {
@@ -145,14 +142,14 @@ namespace HarakaMQ.UnitTests.HarakaMQ.MessageBroker
         public void CanGetTentativeMessagesToSendForPrimaryBroker(
             [Frozen] IHarakaDb harakaDb,
             [Frozen] IMergeProcedure mergeProcedure,
-            [Frozen] IJsonConfigurator jsonConfigurator,
+            [Frozen] IHarakaMQMessageBrokerConfiguration harakaMqMessageBrokerConfiguration,
             [Frozen] ISmartQueueFactory smartQueueFactory,
             AntiEntropy sut,
             SmartQueue smartQueue)
         {
             A.CallTo(() => smartQueueFactory.InitializeSmartQueues(A<EventHandler<List<Subscriber>>>.Ignored)).Returns(new List<ISmartQueue>{smartQueue});
             sut.Initialize();
-            ConfigureSettings(jsonConfigurator);
+            ConfigureSettings(harakaMqMessageBrokerConfiguration);
             
             foreach (var message in CreateTestMessages(5,5, smartQueue.GetTopicId()))
             {
@@ -171,14 +168,14 @@ namespace HarakaMQ.UnitTests.HarakaMQ.MessageBroker
         public void CanGetTentativeMessagesToSendForPrimaryOverMultipleRounds(           
             [Frozen] IHarakaDb harakaDb,
             [Frozen] IMergeProcedure mergeProcedure,
-            [Frozen] IJsonConfigurator jsonConfigurator,
+            [Frozen] IHarakaMQMessageBrokerConfiguration harakaMqMessageBrokerConfiguration,
             [Frozen] ISmartQueueFactory smartQueueFactory,
             AntiEntropy sut,
             SmartQueue smartQueue)
         {
             A.CallTo(() => smartQueueFactory.InitializeSmartQueues(A<EventHandler<List<Subscriber>>>.Ignored)).Returns(new List<ISmartQueue>{smartQueue});
             sut.Initialize();
-            ConfigureSettings(jsonConfigurator);
+            ConfigureSettings(harakaMqMessageBrokerConfiguration);
             
             foreach (var message in CreateTestMessages(15,5, smartQueue.GetTopicId()))
             {
@@ -219,23 +216,23 @@ namespace HarakaMQ.UnitTests.HarakaMQ.MessageBroker
             return messages;
         }
 
-        private void ConfigureSettings(IJsonConfigurator jsonConfigurator, bool primaryBroker = true)
+        private void ConfigureSettings(IHarakaMQMessageBrokerConfiguration harakaMqMessageBrokerConfiguration,
+            bool primaryBroker = true)
         {
-            A.CallTo(() => jsonConfigurator.GetSettings()).Returns(new Settings
-            {
-                PrimaryNumber = primaryBroker ? 1 : 2,
-                BrokerPort = primaryBroker ? 0 : 123,
-                RunInClusterSetup = true,
-                Brokers = new List<Broker>
+            A.CallTo(() => harakaMqMessageBrokerConfiguration.PrimaryNumber).Returns(primaryBroker ? 1 : 2);
+            A.CallTo(() => harakaMqMessageBrokerConfiguration.BrokerPort).Returns(primaryBroker ? 0 : 123);
+            A.CallTo(() => harakaMqMessageBrokerConfiguration.RunInClusterSetup).Returns(true);
+            A.CallTo(() => harakaMqMessageBrokerConfiguration.MessageBrokers).Returns(
+                new List<global::HarakaMQ.MessageBroker.Models.MessageBroker>
                 {
-                    new Broker
+                    new global::HarakaMQ.MessageBroker.Models.MessageBroker
                     {
                         PrimaryNumber = primaryBroker ? 2 : 1,
                         Port = primaryBroker ? 123 : 0,
                         Ipaddress = "foo"
                     }
-                }
-            });
+
+                });
         }
     }
 }

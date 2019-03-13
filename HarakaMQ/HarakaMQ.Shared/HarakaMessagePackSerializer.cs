@@ -1,6 +1,6 @@
 ﻿namespace HarakaMQ.Shared
 {
-    public class MessagePackSerializer : ISerializer
+    public class HarakaMessagePackSerializer : ISerializer
     {
         public byte[] Serialize<T>(T content)
         {

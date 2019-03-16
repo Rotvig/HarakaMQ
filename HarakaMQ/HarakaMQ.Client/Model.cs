@@ -16,7 +16,7 @@ namespace HarakaMQ.Client
 
         public Model(IUdpCommunication udpComm, IHarakaMQUDPConfiguration harakaMqudpConfiguration = null)
         {
-            var configuration = harakaMqudpConfiguration ?? new DefaultHarakaMQUDPConfiguration();
+            var configuration = harakaMqudpConfiguration ?? new HarakaMQUDPConfiguration();
             _comm = udpComm;
             consumers = new List<Tuple<IBasicConsumer, string>>();
             _comm.PublishPackage += OnMessageReceived;

@@ -1,8 +1,9 @@
 using System.Collections.Generic;
+using HarakaMQ.MessageBroker.Interfaces;
 
-namespace HarakaMQ.MessageBroker.Models
+namespace HarakaMQ.MessageBroker
 {
-    public class HarakaMqMessageBrokerConfiguration
+    public class HarakaMQMessageBrokerConfiguration : IHarakaMQMessageBrokerConfiguration
     {
         public int BrokerPort { get; set; }
         public int PrimaryNumber { get; set; }

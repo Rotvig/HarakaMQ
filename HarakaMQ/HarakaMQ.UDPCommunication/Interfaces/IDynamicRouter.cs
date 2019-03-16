@@ -10,6 +10,6 @@ namespace HarakaMQ.UDPCommunication
         void Send(Message msg, string topic, Broker broker = null);
         void SendAdministrationMessage(AdministrationMessage msg, Broker broker = null);
         Task SendPacket(Packet packet, Broker broker = null);
-        void SetupConnection(HarakaMQUDPConfiguration harakaMqudpCopnfiguration);
+        void SetupConnection(IHarakaMQUDPConfiguration harakaMqudpCopnfiguration);
     }
 }

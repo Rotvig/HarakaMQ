@@ -16,7 +16,7 @@ namespace HarakaMQ.UDPCommunication.Utils
         public static string IngoingMessagesCS { get; set; }
         public static string ClientsCS { get; set; }
         
-        public static void SetupDi(HarakaMQUDPConfiguration harakaMqudpCopnfiguration)
+        public static void SetupDi(IHarakaMQUDPConfiguration harakaMqudpCopnfiguration)
         {
             ClientId = harakaMqudpCopnfiguration.IpAdress + harakaMqudpCopnfiguration.ListenPort;
             OutgoingMessagesCS = "OutgoingMessages_" + ClientId;

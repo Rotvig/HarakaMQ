@@ -1,4 +1,5 @@
-﻿using HarakaMQ.UDPCommunication.Utils;
+﻿using HarakaMQ.UDPCommunication.Interfaces;
+using HarakaMQ.UDPCommunication.Utils;
 
 namespace HarakaMQ.Client
 {

@@ -3,7 +3,6 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using HarakaMQ.MessageBroker.Interfaces;
-using HarakaMQ.MessageBroker.Models;
 using HarakaMQ.MessageBroker.Utils;
 using HarakaMQ.UDPCommunication.Events;
 using HarakaMQ.UDPCommunication.Interfaces;
@@ -32,7 +31,7 @@ namespace HarakaMQ.MessageBroker
         private static void Initialize(IConfigurationRoot configurationRoot)
         {
             var harakaUdpConfiguration = new HarakaMQUDPConfiguration();
-            var harakaMessageBrokerConfiguration = new HarakaMqMessageBrokerConfiguration();
+            var harakaMessageBrokerConfiguration = new HarakaMQMessageBrokerConfiguration();
             configurationRoot.Bind(harakaUdpConfiguration);
             configurationRoot.Bind(harakaMessageBrokerConfiguration);
 

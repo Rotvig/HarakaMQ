@@ -13,7 +13,7 @@ namespace HarakaMQ.Client
 
         public Connection(IHarakaMQUDPConfiguration harakaMqudpConfiguration = null)
         {
-            _harakaUDPConfiguration = harakaMqudpConfiguration ?? new DefaultHarakaMQUDPConfiguration();
+            _harakaUDPConfiguration = harakaMqudpConfiguration ?? new HarakaMQUDPConfiguration();
             _udpconn = new UdpCommunication();
             _udpconn.Listen(harakaMqudpConfiguration);
             _listenPort = harakaMqudpConfiguration.ListenPort;

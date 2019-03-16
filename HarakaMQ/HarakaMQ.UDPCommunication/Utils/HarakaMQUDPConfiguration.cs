@@ -1,10 +1,11 @@
 using System.Collections.Generic;
 using System.Diagnostics;
+using HarakaMQ.UDPCommunication.Interfaces;
 using HarakaMQ.UDPCommunication.Models;
 
 namespace HarakaMQ.UDPCommunication.Utils
 {
-    public class HarakaMQUDPConfiguration
+    public class HarakaMQUDPConfiguration : IHarakaMQUDPConfiguration
     {
         public int AcknowledgeMessageAfterNumberOfMessages { get; set; } = 100;
         public int DelayedAcknowledgeWaitTimeInMiliseconds { get; set; } = 2000;

@@ -21,7 +21,9 @@ namespace HarakaMQ.MessageBroker
         {
             Debug.WriteLine("Initializing HarakaMQ");
             var configurationRoot = new ConfigurationBuilder()
-                .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true).Build();
+                .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
+                .AddJsonFile($"appsettings.{GetEnvironment()}.json", optional: false, reloadOnChange: true)
+                .Build();
             
             Initialize(configurationRoot);
             Console.WriteLine(" Press [enter] to exit.");
@@ -36,7 +38,7 @@ namespace HarakaMQ.MessageBroker
             configurationRoot.Bind(harakaMessageBrokerConfiguration);
 
             harakaUdpConfiguration.DisableDelayedAcknowledgeForClientWithIds = harakaUdpConfiguration.Brokers.Select(broker => broker.Id).ToList();
-            Setup.Initialize();
+            Setup.Initialize(harakaUdpConfiguration, harakaMessageBrokerConfiguration);
             _udpCommunication = Setup.container.GetInstance<IUdpCommunication>();
             _udpCommunication.QueueDeclare += QueueDeclareMessageRecieved;
             _udpCommunication.PublishPackage += PublishMessageRecieved;
@@ -65,6 +67,13 @@ namespace HarakaMQ.MessageBroker
         private static void QueueDeclareMessageRecieved(object sender, MessageReceivedEventArgs e)
         {
             _gossip.QueueDeclareMessageReceived(e);
+        }
+
+        private static string GetEnvironment()
+        {
+            return new ConfigurationBuilder()
+                .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true).Build()
+                .GetSection("appsettings").GetValue<string>("Environment").ToLower();
         }
     }
 }

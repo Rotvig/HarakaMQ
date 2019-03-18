@@ -10,18 +10,17 @@ namespace HarakaMQ.UDPCommunication.Utils
     {
         public static Container container;
 
-        public static int MaxPayloadSize = 60203; // 65,507-4 (4 is for the enum added at the senderMessage)
-        public static string ClientId { get; private set; }
+        public const int MaxPayloadSize = 60203; // 65,507-4 (4 is for the enum added at the senderMessage)
         public static string OutgoingMessagesCS { get; set; }
         public static string IngoingMessagesCS { get; set; }
         public static string ClientsCS { get; set; }
         
         public static void SetupDi(IHarakaMQUDPConfiguration harakaMqudpCopnfiguration)
         {
-            ClientId = harakaMqudpCopnfiguration.IpAdress + harakaMqudpCopnfiguration.ListenPort;
-            OutgoingMessagesCS = "OutgoingMessages_" + ClientId;
-            IngoingMessagesCS = "InGoingMessages_" + ClientId;
-            ClientsCS = "Clients_" + ClientId;
+            var clientId = harakaMqudpCopnfiguration.IpAdress + harakaMqudpCopnfiguration.ListenPort;
+            OutgoingMessagesCS = "OutgoingMessages_" + clientId;
+            IngoingMessagesCS = "InGoingMessages_" + clientId;
+            ClientsCS = "Clients_" + clientId;
             // 1. Create a new Simple Injector container
             container = new Container();
 

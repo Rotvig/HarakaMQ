@@ -25,7 +25,6 @@ namespace HarakaMQ.UDPCommunication
             _harakaMqudpCopnfiguration = harakaMqudpConfiguration;
             Setup.SetupDi(_harakaMqudpCopnfiguration);
             _dynamicRouter = Setup.container.GetInstance<IDynamicRouter>();
-            Setup.container.Register(() => _harakaMqudpCopnfiguration, Lifestyle.Singleton);
 
             _dynamicRouter.PublishPackage += PublishPackage;
             _dynamicRouter.Subscribe += Subscribe;

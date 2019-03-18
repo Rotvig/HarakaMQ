@@ -13,7 +13,7 @@ namespace HarakaMQ.UDPCommunication
     {
         private readonly Socket _socket;
 
-        public Sender(HarakaMQUDPConfiguration harakaMqudpConfiguration)
+        public Sender(IHarakaMQUDPConfiguration harakaMqudpConfiguration)
         {
             _socket = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
 

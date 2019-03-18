@@ -14,13 +14,13 @@ namespace HarakaMQ.MessageBroker
     public class SmartQueue : ISmartQueue, IDisposable
     {
         private readonly IPersistenceLayer _db;
-        private readonly HarakaMQMessageBrokerConfiguration _harakaMqMessageBrokerConfiguration;
+        private readonly IHarakaMQMessageBrokerConfiguration _harakaMqMessageBrokerConfiguration;
         private readonly Topic _topic;
         private readonly IUdpCommunication _udpComm;
         private Task _eventConsumerTask;
         private bool _stopConsuming;
 
-        public SmartQueue(IUdpCommunication udpComm, IPersistenceLayer db, HarakaMQMessageBrokerConfiguration harakaMqMessageBrokerConfiguration, Topic topic)
+        public SmartQueue(IUdpCommunication udpComm, IPersistenceLayer db, IHarakaMQMessageBrokerConfiguration harakaMqMessageBrokerConfiguration, Topic topic)
         {
             _udpComm = udpComm;
             _topic = topic;

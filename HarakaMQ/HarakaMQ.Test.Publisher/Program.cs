@@ -1,4 +1,5 @@
 ﻿using HarakaMQ.Client;
+using HarakaMQ.UDPCommunication.Utils;
 using System;
 using System.IO;
 using System.Linq;
@@ -18,21 +19,12 @@ namespace HarakaMQ.Test.Publisher
                 File.Delete(file);
             }
 
-            var ip = "127.0.0.1";
-            var brokerPort = 11100;
             var expectedMessages = 10000;
             var numberOfRounds = 100;
             var waitTime = 1000;
-            if (args.Length >= 2)
-            {
-                ip = args.First();
-                brokerPort = int.Parse(args[1]);
-                waitTime = int.Parse(args[2]);
-                expectedMessages = int.Parse(args.Last());
-                Console.WriteLine("Running with IP: " + ip + " Broker Port: " + brokerPort);
-            }
-            var factory = new ConnectionFactory { HostName = ip, ListenPort = 11000, Port = brokerPort };
-            using (var connection = factory.CreateConnection())
+
+            var factory = new ConnectionFactory();
+            using (var connection = factory.CreateConnection(new HarakaMQUDPConfiguration() { ListenPort = 11800 }))
             using (var channel = connection.CreateModel())
             {
                 channel.QueueDeclare("hello");

@@ -16,12 +16,12 @@ namespace HarakaMQ.UDPCommunication
         private static volatile bool _taskAlreadyRunning;
         private readonly IGuranteedDelivery _guranteedDelivery;
         private readonly IHarakaDb _harakaDb;
-        private readonly HarakaMQUDPConfiguration _harakaMqudpConfiguration;
+        private readonly IHarakaMQUDPConfiguration _harakaMqudpConfiguration;
         private readonly Dictionary<string, ConcurrentQueue<Tuple<string, Message>>> _messagesToPacket;
         private readonly ISchedular _schedular;
         private readonly Dictionary<string, SortedList<int, ExtendedPacketInformation>> _sortedReceivedMessages;
 
-        public AutomaticRepeatReQuest(IGuranteedDelivery guranteedDelivery, ISchedular schedular, IHarakaDb harakaDb, HarakaMQUDPConfiguration harakaMqudpConfiguration)
+        public AutomaticRepeatReQuest(IGuranteedDelivery guranteedDelivery, ISchedular schedular, IHarakaDb harakaDb, IHarakaMQUDPConfiguration harakaMqudpConfiguration)
         {
             _guranteedDelivery = guranteedDelivery;
             _schedular = schedular;

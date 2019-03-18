@@ -16,14 +16,25 @@ namespace HarakaMQ.MessageBroker.Utils
         public static int PacketSize = 65000;
         public static int TotalPacketSize = PacketSize + AntiEntropySize;
 
-        internal static void Initialize()
+        internal static void Initialize(IHarakaMQUDPConfiguration harakaMQUDPConfiguration, IHarakaMQMessageBrokerConfiguration harakaMqMessageBrokerConfiguration)
         {
             // 1. Create a new Simple Injector container
             container = new Container();
 
             // 2. Configure the container (register)
-            var serializer = new HarakaUTF8JsonSerializer();
-            container.Register<ISerializer>(() => serializer, Lifestyle.Singleton);
+            ISerializer serializer = null;
+            if (harakaMQUDPConfiguration.Logging.LogLevel.Default.ToLower() == "debug")
+            {
+                serializer = new HarakaUTF8JsonSerializer();
+                container.Register(() => serializer, Lifestyle.Singleton);
+            }
+            else
+            {
+                serializer = new HarakaMessagePackSerializer();
+                container.Register(() => serializer, Lifestyle.Singleton);
+            }
+            container.Register(() => harakaMQUDPConfiguration, Lifestyle.Singleton);
+            container.Register(() => harakaMqMessageBrokerConfiguration, Lifestyle.Singleton);
             container.Register<ISmartQueueFactory, SmartQueueFactory>(Lifestyle.Singleton);
             container.Register<IUdpCommunication, UdpCommunication>(Lifestyle.Singleton);
             container.Register<IMergeProcedure, MergeProcedure>(Lifestyle.Singleton);

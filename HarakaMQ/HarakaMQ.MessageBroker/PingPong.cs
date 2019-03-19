@@ -37,14 +37,18 @@ namespace HarakaMQ.MessageBroker
             _udpCommunication = udpCommunication;
             _latencyInMs = harakaMqMessageBrokerConfiguration.AntiEntropyMilliseonds / 10; //Todo: find real latency
 
-            foreach (var broker in harakaMqMessageBrokerConfiguration.MessageBrokers)
-                _brokers.Add(new MessageBrokerInformation
-                {
-                    Active = true,
-                    PrimaryNumber = broker.PrimaryNumber,
-                    Port = broker.Port,
-                    Ipaddress = broker.Ipaddress
-                });
+            if (harakaMqMessageBrokerConfiguration.MessageBrokers != null)
+            {
+
+                foreach (var broker in harakaMqMessageBrokerConfiguration?.MessageBrokers)
+                    _brokers.Add(new MessageBrokerInformation
+                    {
+                        Active = true,
+                        PrimaryNumber = broker.PrimaryNumber,
+                        Port = broker.Port,
+                        Ipaddress = broker.Ipaddress
+                    });
+            }
         }
 
         public void SubScribeMessageReceived(MessageReceivedEventArgs message)

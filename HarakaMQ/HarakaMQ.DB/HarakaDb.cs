@@ -71,6 +71,10 @@ namespace HarakaMQ.DB
 
         public void CreateFiles(params string[] fileNames)
         {
+            if(!Directory.Exists("mnesia"))
+            {
+                System.IO.Directory.CreateDirectory("mnesia");
+            }
             foreach (var filename in fileNames)
             {
                 Mutexes.TryAdd(filename, new object());

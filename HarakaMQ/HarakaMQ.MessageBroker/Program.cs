@@ -1,9 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
-using System.IO;
 using System.Linq;
 using HarakaMQ.MessageBroker.Interfaces;
-using HarakaMQ.MessageBroker.Utils;
 using HarakaMQ.UDPCommunication.Events;
 using HarakaMQ.UDPCommunication.Interfaces;
 using HarakaMQ.UDPCommunication.Utils;
@@ -34,8 +32,8 @@ namespace HarakaMQ.MessageBroker
         {
             var harakaUdpConfiguration = new HarakaMQUDPConfiguration();
             var harakaMessageBrokerConfiguration = new HarakaMQMessageBrokerConfiguration();
-            configurationRoot.Bind(harakaUdpConfiguration);
-            configurationRoot.Bind(harakaMessageBrokerConfiguration);
+            configurationRoot.Bind("HarakaMQUDPConfiguration", harakaUdpConfiguration);
+            configurationRoot.Bind("HarakaMQMessageBrokerConfiguration", harakaMessageBrokerConfiguration);
 
             harakaUdpConfiguration.DisableDelayedAcknowledgeForClientWithIds = harakaUdpConfiguration.Brokers.Select(broker => broker.Id).ToList();
             Setup.Initialize(harakaUdpConfiguration, harakaMessageBrokerConfiguration);

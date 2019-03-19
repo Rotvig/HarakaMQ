@@ -1,6 +1,8 @@
 ﻿using HarakaMQ.Client;
+using HarakaMQ.UDPCommunication.Models;
 using HarakaMQ.UDPCommunication.Utils;
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -24,7 +26,7 @@ namespace HarakaMQ.Test.Publisher
             var waitTime = 1000;
 
             var factory = new ConnectionFactory();
-            using (var connection = factory.CreateConnection(new HarakaMQUDPConfiguration() { ListenPort = 11800 }))
+            using (var connection = factory.CreateConnection(new HarakaMQUDPConfiguration() { ListenPort = 11800, Brokers = new List<Broker> { new Broker { IpAdress = "127.0.0.1", Port = 11100 } } }))
             using (var channel = connection.CreateModel())
             {
                 channel.QueueDeclare("hello");

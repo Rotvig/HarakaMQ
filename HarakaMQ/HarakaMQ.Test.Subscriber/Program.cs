@@ -1,4 +1,5 @@
 ﻿using HarakaMQ.Client;
+using HarakaMQ.UDPCommunication.Models;
 using HarakaMQ.UDPCommunication.Utils;
 using Newtonsoft.Json;
 using System;
@@ -25,7 +26,7 @@ namespace HarakaMQ.Test.Subscriber
             var expectedMessages = 10000;
 
             var factory = new ConnectionFactory();
-            using (var connection = factory.CreateConnection(new HarakaMQUDPConfiguration() { ListenPort = 11700 }))
+            using (var connection = factory.CreateConnection(new HarakaMQUDPConfiguration() { ListenPort = 11700, Brokers = new List<Broker> { new Broker { IpAdress = "127.0.0.1", Port = 11100 } } }))
             using (var channel = connection.CreateModel())
             {
                 channel.QueueDeclare("hello");

@@ -18,9 +18,9 @@ namespace HarakaMQ.UDPCommunication.Utils
         public static void SetupDi(IHarakaMQUDPConfiguration harakaMqudpCopnfiguration)
         {
             var clientId = harakaMqudpCopnfiguration.IpAdress + harakaMqudpCopnfiguration.ListenPort;
-            OutgoingMessagesCS = "OutgoingMessages_" + clientId;
-            IngoingMessagesCS = "InGoingMessages_" + clientId;
-            ClientsCS = "Clients_" + clientId;
+            OutgoingMessagesCS = "mnesia/OutgoingMessages_" + clientId;
+            IngoingMessagesCS = "mnesia/InGoingMessages_" + clientId;
+            ClientsCS = "mnesia/Clients_" + clientId;
             // 1. Create a new Simple Injector container
             container = new Container();
 

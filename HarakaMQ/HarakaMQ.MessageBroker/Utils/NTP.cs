@@ -10,7 +10,7 @@ namespace HarakaMQ.MessageBroker.Utils
         private readonly string _serverAddress;
         private Yort.Ntp.NtpClient _ntpClient;
 
-        public NTP(HarakaMQMessageBrokerConfiguration harakaMqMessageBrokerConfiguration)
+        public NTP(IHarakaMQMessageBrokerConfiguration harakaMqMessageBrokerConfiguration)
         {
             _serverAddress = harakaMqMessageBrokerConfiguration.TimeSyncServerAddress;
         }

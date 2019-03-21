@@ -13,9 +13,9 @@ namespace HarakaMQ.MessageBroker.Models
         private readonly IHarakaDb _harakaDb;
         private readonly IUdpCommunication _udpCommunication;
         private readonly IPersistenceLayer _persistenceLayer;
-        private readonly HarakaMQMessageBrokerConfiguration _harakaMqMessageBrokerConfiguration;
+        private readonly IHarakaMQMessageBrokerConfiguration _harakaMqMessageBrokerConfiguration;
 
-        public SmartQueueFactory(IHarakaDb harakaDb, IUdpCommunication udpCommunication, IPersistenceLayer persistenceLayer, HarakaMQMessageBrokerConfiguration harakaMqMessageBrokerConfiguration)
+        public SmartQueueFactory(IHarakaDb harakaDb, IUdpCommunication udpCommunication, IPersistenceLayer persistenceLayer, IHarakaMQMessageBrokerConfiguration harakaMqMessageBrokerConfiguration)
         {
             _harakaDb = harakaDb;
             _udpCommunication = udpCommunication;

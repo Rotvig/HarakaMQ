@@ -15,7 +15,7 @@ namespace HarakaMQ.MessageBroker
         private readonly IHarakaDb _harakaDb;
         private readonly ISmartQueueFactory _smartQueueFactory;
         private readonly IMergeProcedure _mergeProcedure;
-        private readonly HarakaMQMessageBrokerConfiguration _harakaMqMessageBrokerConfiguration;
+        private readonly IHarakaMQMessageBrokerConfiguration _harakaMqMessageBrokerConfiguration;
         private readonly List<Publisher> _publishers = new List<Publisher>();
         private List<ISmartQueue> _queues;
         private volatile List<Subscriber> _subscribers = new List<Subscriber>();
@@ -24,7 +24,7 @@ namespace HarakaMQ.MessageBroker
         private List<PublishPacketReceivedEventArgs> _ownTentativeMessages = new List<PublishPacketReceivedEventArgs>();
         private readonly object _messagesLock = new object();
 
-        public AntiEntropy(IHarakaDb harakaDb, IMergeProcedure mergeProcedure, HarakaMQMessageBrokerConfiguration harakaMqMessageBrokerConfiguration, ISmartQueueFactory smartQueueFactory)
+        public AntiEntropy(IHarakaDb harakaDb, IMergeProcedure mergeProcedure, IHarakaMQMessageBrokerConfiguration harakaMqMessageBrokerConfiguration, ISmartQueueFactory smartQueueFactory)
         {
             _harakaDb = harakaDb;
             _mergeProcedure = mergeProcedure;

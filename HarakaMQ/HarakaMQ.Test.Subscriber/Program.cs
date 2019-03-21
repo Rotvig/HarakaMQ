@@ -16,9 +16,7 @@ namespace HarakaMQ.Test.Subscriber
     {
         static void Main(string[] args)
         {
-            var files = Directory.GetFiles(Directory.GetCurrentDirectory(), "*.db");
-
-            foreach (var file in Directory.GetFiles(Directory.GetCurrentDirectory(), "*.db"))
+            foreach (var file in Directory.GetFiles(Directory.GetCurrentDirectory() + "/mnesia", "*.db"))
             {
                 File.Delete(file);
             }

@@ -33,8 +33,8 @@ namespace HarakaMQ.MessageBroker.Utils
                 serializer = new HarakaMessagePackSerializer();
                 container.Register(() => serializer, Lifestyle.Singleton);
             }
-            container.Register(() => harakaMQUDPConfiguration, Lifestyle.Singleton);
             container.Register(() => harakaMqMessageBrokerConfiguration, Lifestyle.Singleton);
+            container.Register(() => harakaMQUDPConfiguration, Lifestyle.Singleton);
             container.Register<ISmartQueueFactory, SmartQueueFactory>(Lifestyle.Singleton);
             container.Register<IUdpCommunication, UdpCommunication>(Lifestyle.Singleton);
             container.Register<IMergeProcedure, MergeProcedure>(Lifestyle.Singleton);

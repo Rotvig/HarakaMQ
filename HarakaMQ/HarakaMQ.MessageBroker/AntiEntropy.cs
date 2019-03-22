@@ -7,6 +7,7 @@ using HarakaMQ.MessageBroker.Models;
 using HarakaMQ.MessageBroker.Utils;
 using HarakaMQ.UDPCommunication.Events;
 using HarakaMQ.UDPCommunication.Interfaces;
+using HarakaMQ.UDPCommunication.Models;
 
 namespace HarakaMQ.MessageBroker
 {
@@ -150,7 +151,7 @@ namespace HarakaMQ.MessageBroker
 
         public void SubScribeMessageReceived(MessageReceivedEventArgs message)
         {
-            var subscriber = new Subscriber(message.IpAddress, message.Port, _harakaMqMessageBrokerConfiguration.PrimaryNumber, message.SenderClient);
+            var subscriber = new Subscriber(new Host { IPAddress = message.IpAddress, Port = message.Port}, _harakaMqMessageBrokerConfiguration.PrimaryNumber, message.SenderClient);
             _queues.Find(x => x.GetTopicId() == message.AdministrationMessage.Topic).AddEvent(new Event(subscriber, EventType.AddSubscriber));
             _subscribers.Add(subscriber);
         }

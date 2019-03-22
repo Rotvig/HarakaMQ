@@ -112,7 +112,7 @@ namespace HarakaMQ.MessageBroker
         {
             _topic.Subscribers = _db.GetSubScribers(_topic);
             foreach (var sub in _topic.Subscribers.Where(x => x.AttachedBroker == _harakaMqMessageBrokerConfiguration.PrimaryNumber))
-                _udpComm.SendPackage(message.Packet, sub.Ip, sub.Port);
+                _udpComm.SendPackage(message.Packet, sub.Host);
         }
 
         //Todo: Enable to bulk messages to subscribers
@@ -123,7 +123,7 @@ namespace HarakaMQ.MessageBroker
             foreach (var sub in _topic.Subscribers.Where(x => !x.ReceiveTentativeMessages && x.AttachedBroker == _harakaMqMessageBrokerConfiguration.PrimaryNumber))
                 if (messageReceivedEventArgse.Packet.GlobalSequenceNumber > sub.GlobalSequenceNumberLastReceived)
                 {
-                    _udpComm.SendPackage(messageReceivedEventArgse.Packet, sub.Ip, sub.Port);
+                    _udpComm.SendPackage(messageReceivedEventArgse.Packet, sub.Host);
                     sub.UpdateGobalSequenceNumber(messageReceivedEventArgse.Packet.GlobalSequenceNumber.Value);
                 }
 
@@ -139,7 +139,7 @@ namespace HarakaMQ.MessageBroker
             //Todo: Dont send messages to one that has already received it
             foreach (var messageReceivedEventArgse in messages)
             foreach (var sub in _topic.Subscribers.Where(x => x.ReceiveTentativeMessages && x.AttachedBroker == _harakaMqMessageBrokerConfiguration.PrimaryNumber))
-                _udpComm.SendPackage(messageReceivedEventArgse.Packet, sub.Ip, sub.Port);
+                _udpComm.SendPackage(messageReceivedEventArgse.Packet, sub.Host);
         }
 
         private void PublishAndAddTentativeMessage(PublishPacketReceivedEventArgs message)
@@ -148,7 +148,7 @@ namespace HarakaMQ.MessageBroker
             _topic.Subscribers = _db.GetSubScribers(_topic);
             //Todo: Dont send messages to one that has already received it
             foreach (var sub in _topic.Subscribers.Where(x => x.ReceiveTentativeMessages && x.AttachedBroker == _harakaMqMessageBrokerConfiguration.PrimaryNumber))
-                _udpComm.SendPackage(message.Packet, sub.Ip, sub.Port);
+                _udpComm.SendPackage(message.Packet, sub.Host);
         }
 
         public void AddSubscriber(Subscriber subscriber)

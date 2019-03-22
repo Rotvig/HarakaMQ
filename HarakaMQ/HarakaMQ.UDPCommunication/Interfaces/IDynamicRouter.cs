@@ -1,15 +1,14 @@
+using System.Net;
 using System.Threading.Tasks;
-using HarakaMQ.UDPCommunication.Interfaces;
 using HarakaMQ.UDPCommunication.Models;
-using HarakaMQ.UDPCommunication.Utils;
 
-namespace HarakaMQ.UDPCommunication
+namespace HarakaMQ.UDPCommunication.Interfaces
 {
     public interface IDynamicRouter : IMessageEvents
     {
-        void Send(Message msg, string topic, Broker broker = null);
-        void SendAdministrationMessage(AdministrationMessage msg, Broker broker = null);
-        Task SendPacket(Packet packet, Broker broker = null);
-        void SetupConnection(IHarakaMQUDPConfiguration harakaMqudpCopnfiguration);
+        void Send(Message msg, string topic, Host host = null);
+        void SendAdministrationMessage(AdministrationMessage msg, Host host = null);
+        Task SendPacket(Packet packet, Host host = null);
+        void SetupConnection(IHarakaMQUDPConfiguration harakaMqudpConfiguration);
     }
 }

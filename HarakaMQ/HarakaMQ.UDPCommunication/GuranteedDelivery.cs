@@ -61,7 +61,7 @@ namespace HarakaMQ.UDPCommunication
                 _harakaDb.StoreObject(Setup.OutgoingMessagesCS, messages);
             }
 
-            await _sender.SendMsg(sendMsg, msg.Ip, msg.Port);
+            await _sender.SendMsg(sendMsg, msg.Host);
         }
 
         public void ReSend(Guid messageId)
@@ -73,7 +73,7 @@ namespace HarakaMQ.UDPCommunication
                 Body = _serializer.Serialize(extendedPacketInformation.Packet),
                 Type = extendedPacketInformation.UdpMessageType
             };
-            _sender.SendMsg(sendMsg, extendedPacketInformation.Ip, extendedPacketInformation.Port);
+            _sender.SendMsg(sendMsg, extendedPacketInformation.Host);
         }
 
         public void ReSend(string clientId, int seqNo)
@@ -85,10 +85,10 @@ namespace HarakaMQ.UDPCommunication
                 Body = _serializer.Serialize(extendedPacketInformation.Packet),
                 Type = extendedPacketInformation.UdpMessageType
             };
-            _sender.SendMsg(sendMsg, extendedPacketInformation.Ip, extendedPacketInformation.Port);
+            _sender.SendMsg(sendMsg, extendedPacketInformation.Host);
         }
-
-        public void SendUdpMessage(UdpMessage msg, UdpMessageType type, string ip, int port)
+        
+        public void SendUdpMessage(UdpMessage msg, UdpMessageType type, Host host)
         {
             var sendMsg = new SenderMessage
             {
@@ -96,7 +96,7 @@ namespace HarakaMQ.UDPCommunication
                 Type = type
             };
 
-            _sender.SendMsg(sendMsg, ip, port);
+            _sender.SendMsg(sendMsg, host);
         }
 
         public async Task RemoveMessagesFromSendQueueAsync(string clientId, int seqNo)
@@ -193,7 +193,7 @@ namespace HarakaMQ.UDPCommunication
                         Body = _serializer.Serialize(extendedMsg.Packet),
                         Type = extendedMsg.UdpMessageType
                     };
-                    _sender.SendMsg(sendMsg, extendedMsg.Ip, extendedMsg.Port);
+                    _sender.SendMsg(sendMsg, extendedMsg.Host);
                 }
             }
         }

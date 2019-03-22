@@ -11,7 +11,7 @@ namespace HarakaMQ.MessageBroker.Utils
     public static class Setup
     {
         internal static Container container;
-        internal static string PublisherCs = "mnesia/Publishers";
+        internal static string PublisherCs = "Publishers";
         public static int AntiEntropySize = 300;
         public static int PacketSize = 65000;
         public static int TotalPacketSize = PacketSize + AntiEntropySize;
@@ -41,9 +41,8 @@ namespace HarakaMQ.MessageBroker.Utils
             container.Register<ISchedular, Schedular>(Lifestyle.Singleton);
             container.Register<IAntiEntropy, AntiEntropy>(Lifestyle.Singleton);
             container.Register<IGossip, PingPong>(Lifestyle.Singleton);
-            container.Register<IHarakaDb>(() => new HarakaDb(serializer,"Topics", PublisherCs), Lifestyle.Singleton);
+            container.Register<IHarakaDb>(() => new HarakaDb(serializer, "Topics", PublisherCs), Lifestyle.Singleton);
             container.Register<IPersistenceLayer>(() => new PersistenceLayer(container.GetInstance<IHarakaDb>(), "Topics"), Lifestyle.Singleton);
-            container.Register<IClock, Clock>(Lifestyle.Singleton);
             container.Register<ITimeSyncProtocol, NTP>(Lifestyle.Singleton);
 
             // 3. Verify your configuration: Only for testing

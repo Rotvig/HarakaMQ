@@ -5,18 +5,8 @@ namespace HarakaMQ.UDPCommunication.Models
     [MessagePackObject]
     public class Client
     {
-        public Client()
-        {
-        }
-
-        public Client(string ip, int port)
-        {
-            Ip = ip;
-            Port = port;
-        }
-
         [IgnoreMember]
-        public string Id => Ip + Port;
+        public string Id => Host.IPAddress + Host.Port;
 
         /// <summary>
         ///     Represent the last message send
@@ -31,10 +21,7 @@ namespace HarakaMQ.UDPCommunication.Models
         public int IngoingSeqNo { get; set; }
 
         [Key(2)]
-        public string Ip { get; set; }
-
-        [Key(3)]
-        public int Port { get; set; }
+        public Host Host { get; set; }
 
         public void SetIngoingSeqNo(int number)
         {

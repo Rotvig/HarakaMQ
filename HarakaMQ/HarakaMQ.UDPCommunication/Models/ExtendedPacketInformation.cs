@@ -10,26 +10,27 @@ namespace HarakaMQ.UDPCommunication.Models
         {
         }
 
-        public ExtendedPacketInformation(Guid messageId)
+        public ExtendedPacketInformation(Packet packet, UdpMessageType type, Host host)
         {
-            Id = messageId;
+            Id = Guid.NewGuid();
+            UdpMessageType = type;
+            Packet = packet;
+            Host = host;
         }
-
+        
         public ExtendedPacketInformation(Packet packet, UdpMessageType type, string ip, int port)
         {
             Id = Guid.NewGuid();
             UdpMessageType = type;
-            Ip = ip;
-            Port = port;
             Packet = packet;
+            Host = new Host(){IPAddress = ip, Port = port};
         }
 
         public ExtendedPacketInformation(Packet packet, UdpMessageType type, string ip)
         {
             Id = Guid.NewGuid();
             UdpMessageType = type;
-            Ip = ip;
-            Port = packet.ReturnPort;
+            Host = new Host(){IPAddress = ip, Port = packet.ReturnPort};
             Packet = packet;
         }
 
@@ -38,8 +39,7 @@ namespace HarakaMQ.UDPCommunication.Models
             Id = Guid.NewGuid();
             UdpMessageType = type;
             UdpMessage = msg;
-            Ip = ip;
-            Port = msg.ReturnPort;
+            Host = new Host(){IPAddress = ip, Port = msg.ReturnPort};
         }
 
         [Key(0)]
@@ -54,30 +54,11 @@ namespace HarakaMQ.UDPCommunication.Models
         [Key(3)]
         public UdpMessageType UdpMessageType { get; set; }
 
-        //Ip and port is for orignal reciever 
+        //Host is for orignal reciever 
         [Key(4)]
-        public string Ip { get; set; }
-
-        [Key(5)]
-        public int Port { get; set; }
+        public Host Host { get; set; }
 
         [IgnoreMember]
-        public string SenderClient => Ip + Port;
-
-        public void SetUdpMessageType(UdpMessageType type)
-        {
-            UdpMessageType = type;
-        }
-
-        public void SetIpAndPort(string ip, int port)
-        {
-            Ip = ip;
-            Port = port;
-        }
-
-        public void SetId(Guid id)
-        {
-            Id = id;
-        }
+        public string SenderClient => Host.IPAddress + Host.Port;
     }
 }

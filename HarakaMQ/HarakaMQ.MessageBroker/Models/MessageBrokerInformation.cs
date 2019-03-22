@@ -1,4 +1,5 @@
 ﻿using System;
+using HarakaMQ.UDPCommunication.Models;
 
 namespace HarakaMQ.MessageBroker.Models
 {
@@ -8,7 +9,7 @@ namespace HarakaMQ.MessageBroker.Models
         {
             Active = true;
         }
-
+        
         public bool Active { get; set; }
         public int CurrentAntiEntropyRound { get; set; }
         public int LastCommittedSeqNumberReceived { get; set; }

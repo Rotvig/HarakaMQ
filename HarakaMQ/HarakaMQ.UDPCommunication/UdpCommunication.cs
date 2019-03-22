@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using System.Net;
 using HarakaMQ.UDPCommunication.Events;
 using HarakaMQ.UDPCommunication.Interfaces;
 using HarakaMQ.UDPCommunication.Models;
@@ -35,29 +36,19 @@ namespace HarakaMQ.UDPCommunication
             _dynamicRouter.SetupConnection(_harakaMqudpCopnfiguration);
         }
 
-        public void Send(Message msg, string topic)
+        public void Send(Message msg, string topic, Host host = null)
         {
-            _dynamicRouter.Send(msg, topic);
+            _dynamicRouter.Send(msg, topic, host);
         }
 
-        public void Send(Message msg, string ip, int port, string topic)
+        public async void SendPackage(Packet packet, Host host = null)
         {
-            _dynamicRouter.Send(msg, topic);
+            await _dynamicRouter.SendPacket(packet, host);
         }
 
-        public async void SendPackage(Packet packet, string ip, int port)
+        public void SendAdministrationMessage(AdministrationMessage msg, Host host = null)
         {
-            await _dynamicRouter.SendPacket(packet);
-        }
-
-        public void SendAdministrationMessage(AdministrationMessage msg)
-        {
-            _dynamicRouter.SendAdministrationMessage(msg);
-        }
-
-        public void SendAdministrationMessage(AdministrationMessage msg, string ip, int port)
-        {
-            _dynamicRouter.SendAdministrationMessage(msg);
+            _dynamicRouter.SendAdministrationMessage(msg, host);
         }
     }
 }

@@ -13,7 +13,7 @@ namespace HarakaMQ.UDPCommunication.Utils
         public IEnumerable<string> DisableDelayedAcknowledgeForClientWithIds { get; set; } = new List<string>();
         public int ListenPort { get; set; } = 12000;
         public string IpAdress { get; set; } = Ext.GetIp4Address();
-        public IEnumerable<Broker> Brokers { get; set; } = new List<Broker>();
+        public IEnumerable<Host> Hosts { get; set; } = new List<Host>();
         public Logging Logging { get; set; } = new Logging(new LogLevel() {Default = "debug"});
 
     }

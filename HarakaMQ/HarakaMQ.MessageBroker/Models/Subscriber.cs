@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using HarakaMQ.UDPCommunication.Models;
 using MessagePack;
 
 namespace HarakaMQ.MessageBroker.Models
@@ -7,10 +8,9 @@ namespace HarakaMQ.MessageBroker.Models
     [MessagePackObject]
     public class Subscriber
     {
-        public Subscriber(string ip, int port, int attachedBroker, string clientId)
+        public Subscriber(Host host, int attachedBroker, string clientId)
         {
-            Ip = ip;
-            Port = port;
+            Host = host;
             ClientId = clientId;
             MessagesReceived = new List<Guid>();
             AttachedBroker = attachedBroker;
@@ -22,21 +22,18 @@ namespace HarakaMQ.MessageBroker.Models
         }
 
         [Key(0)]
-        public string Ip { get; set; }
-
+        public Host Host { get; set; }
+            
         [Key(1)]
-        public int Port { get; set; }
-
-        [Key(2)]
         public string ClientId { get; set; }
 
-        [Key(3)]
+        [Key(2)]
         public int GlobalSequenceNumberLastReceived { get; set; }
 
-        [Key(4)]
+        [Key(3)]
         public int AttachedBroker { get; set; }
 
-        [Key(5)]
+        [Key(4)]
         public bool ReceiveTentativeMessages { get; set; }
 
         /// <summary>
@@ -45,12 +42,6 @@ namespace HarakaMQ.MessageBroker.Models
         /// </summary>
         [Key(6)]
         public List<Guid> MessagesReceived { get; set; }
-
-        public void SetIpAndPort(string ip, int port)
-        {
-            Ip = ip;
-            Port = port;
-        }
 
         public void UpdateGobalSequenceNumber(int number)
         {

@@ -1,5 +1,6 @@
 using System;
 using System.Linq;
+using System.Net;
 using System.Threading.Tasks;
 using HarakaMQ.UDPCommunication.Events;
 using HarakaMQ.UDPCommunication.Interfaces;
@@ -21,19 +22,19 @@ namespace HarakaMQ.UDPCommunication
         public event EventHandler<MessageReceivedEventArgs> AntiEntropyMessage;
         public event EventHandler<MessageReceivedEventArgs> ClockSyncMessage;
         
-        public void Send(Message msg, string topic, Broker broker = null)
+        public void Send(Message msg, string topic, Host host = null)
         {
-            _automaticRepeatReqeust.Send(msg, topic, broker ?? GetBroker());
+            _automaticRepeatReqeust.Send(msg, topic, host ?? GetHost());
         }
 
-        public void SendAdministrationMessage(AdministrationMessage msg, Broker broker = null)
+        public void SendAdministrationMessage(AdministrationMessage msg, Host host = null)
         {
-            _automaticRepeatReqeust.SendAdministrationMessage(msg, broker ??  GetBroker());
+            _automaticRepeatReqeust.SendAdministrationMessage(msg, host ??  GetHost());
         }
 
-        public async Task SendPacket(Packet packet, Broker broker = null)
+        public async Task SendPacket(Packet packet, Host host  = null)
         {
-            await _automaticRepeatReqeust.SendPacket(packet, broker ?? GetBroker());
+            await _automaticRepeatReqeust.SendPacket(packet, host ?? GetHost());
         }
 
         public void SetupConnection(IHarakaMQUDPConfiguration harakaMqudpConfiguration)
@@ -50,13 +51,13 @@ namespace HarakaMQ.UDPCommunication
             _automaticRepeatReqeust.Listen(harakaMqudpConfiguration.ListenPort);
         }
 
-        private Broker GetBroker()
+        private Host GetHost()
         {
-            if (_harakaMqudpCopnfiguration.Brokers.Any())
-            {
-                return _harakaMqudpCopnfiguration.Brokers.First();
-            }
-            throw new ArgumentException($"UDP configuration did not contain any brokers {JsonConvert.SerializeObject(_harakaMqudpCopnfiguration)}");
+            if (!_harakaMqudpCopnfiguration.Hosts.Any())
+                throw new ArgumentException(
+                    $"UDP configuration did not contain any brokers {JsonConvert.SerializeObject(_harakaMqudpCopnfiguration)}");
+            
+           return _harakaMqudpCopnfiguration.Hosts.First();
         }
     }
 }

@@ -11,9 +11,18 @@ namespace HarakaMQ.DB
     {
         private readonly ISerializer _serializer;
         private readonly ConcurrentDictionary<string, object> Mutexes = new ConcurrentDictionary<string, object>();
+        private string _mnesiaDirectoryPath;
 
         public HarakaDb(ISerializer serializer, params string[] fileNames)
         {
+            _mnesiaDirectoryPath = Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location);
+            _serializer = serializer;
+            CreateFiles(fileNames);
+        }
+        
+        HarakaDb(ISerializer serializer, string mnesiaDirectoryPath = null, params string[] fileNames)
+        {
+            _mnesiaDirectoryPath = mnesiaDirectoryPath ?? Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location);
             _serializer = serializer;
             CreateFiles(fileNames);
         }
@@ -31,11 +40,11 @@ namespace HarakaMQ.DB
             //It is needed because the file is locked some times
             try
             {
-                File.WriteAllBytes(fileName + ".db", _serializer.Serialize(obj));
+                File.WriteAllBytes(_mnesiaDirectoryPath + "/mnesia/" + fileName + ".db", _serializer.Serialize(obj));
             }
             catch (Exception)
             {
-                File.WriteAllBytes(fileName + ".db", _serializer.Serialize(obj));
+                File.WriteAllBytes(_mnesiaDirectoryPath + "/mnesia/" + fileName + ".db", _serializer.Serialize(obj));
             }
             return obj;
         }
@@ -48,7 +57,7 @@ namespace HarakaMQ.DB
         /// <returns></returns>
         public List<T> GetObjects<T>(string fileName)
         {
-            var output = File.ReadAllBytes(fileName + ".db");
+            var output = File.ReadAllBytes(_mnesiaDirectoryPath + "/mnesia/" + fileName + ".db");
             return output.Length == 0 ? (List<T>) Activator.CreateInstance(typeof(List<T>)) : _serializer.Deserialize<List<T>>(output);
         }
 
@@ -58,7 +67,7 @@ namespace HarakaMQ.DB
             byte[] output;
             lock (mutex)
             {
-                output = File.ReadAllBytes(fileName + ".db");
+                output = File.ReadAllBytes(_mnesiaDirectoryPath + "/mnesia/" + fileName + ".db");
             }
 
             return output.Length == 0 ? (List<T>) Activator.CreateInstance(typeof(List<T>)) : _serializer.Deserialize<List<T>>(output);
@@ -71,21 +80,21 @@ namespace HarakaMQ.DB
 
         public void CreateFiles(params string[] fileNames)
         {
-            if(!Directory.Exists("mnesia"))
+            if(!Directory.Exists(_mnesiaDirectoryPath + "/mnesia"))
             {
-                System.IO.Directory.CreateDirectory("mnesia");
+                Directory.CreateDirectory(_mnesiaDirectoryPath + "/mnesia");
             }
             foreach (var filename in fileNames)
             {
-                Mutexes.TryAdd(filename, new object());
-                if (!File.Exists(filename + ".db"))
-                    File.Create(filename + ".db").Dispose();
+                Mutexes.TryAdd(_mnesiaDirectoryPath + "/mnesia/" + filename, new object());
+                if (!File.Exists(_mnesiaDirectoryPath + "/mnesia/" + filename + ".db"))
+                    File.Create(_mnesiaDirectoryPath + "/mnesia/" + filename + ".db").Dispose();
             }
         }
 
         public object GetLock(string fileName)
         {
-            if (!Mutexes.TryGetValue(fileName, out var mutex))
+            if (!Mutexes.TryGetValue(_mnesiaDirectoryPath + "/mnesia/" + fileName, out var mutex))
                 throw new ArgumentException("No Mutex has been allocated for this file");
             return mutex;
         }

@@ -12,7 +12,7 @@ namespace HarakaMQ.UDPCommunication.Interfaces
         IEnumerable<string> DisableDelayedAcknowledgeForClientWithIds { get; set; }
         int ListenPort { get; set; }
         string IpAdress { get; set; }
-        IEnumerable<Broker> Brokers { get; set; }
+        IEnumerable<Host> Hosts { get; set; }
         Logging Logging { get; set; }
     }
 }

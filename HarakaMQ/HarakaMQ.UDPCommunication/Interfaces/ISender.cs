@@ -5,6 +5,8 @@ namespace HarakaMQ.UDPCommunication.Interfaces
 {
     public interface ISender
     {
-        Task SendMsg(SenderMessage msg, string ip, int port);
+        Task SendMsg(SenderMessage msg, Host host);
+        Task SendMsg(SenderMessage msg, string iPAddress, int port);
+
     }
 }

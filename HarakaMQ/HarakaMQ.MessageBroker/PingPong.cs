@@ -15,7 +15,7 @@ namespace HarakaMQ.MessageBroker
     {
         private readonly IAntiEntropy _antiEntropy;
         private readonly IHarakaMQMessageBrokerConfiguration _harakaMqMessageBrokerConfiguration;
-        private readonly List<MessageBrokerInformation> _brokers = new List<MessageBrokerInformation>();
+        private readonly List<MessageBrokerInformation> _messageBrokers = new List<MessageBrokerInformation>();
         private readonly ITimeSyncProtocol _timeSyncProtocol;
         private readonly ISerializer _serializer;
         private readonly int _latencyInMs;
@@ -39,14 +39,12 @@ namespace HarakaMQ.MessageBroker
 
             if (harakaMqMessageBrokerConfiguration.MessageBrokers != null)
             {
-
                 foreach (var broker in harakaMqMessageBrokerConfiguration?.MessageBrokers)
-                    _brokers.Add(new MessageBrokerInformation
+                    _messageBrokers.Add(new MessageBrokerInformation
                     {
                         Active = true,
                         PrimaryNumber = broker.PrimaryNumber,
-                        Port = broker.Port,
-                        Ipaddress = broker.Ipaddress
+                        Host = broker.Host
                     });
             }
         }
@@ -71,7 +69,7 @@ namespace HarakaMQ.MessageBroker
         public void AntiEntropyMessageReceived(MessageReceivedEventArgs messageReceivedEventArgs)
         {
             var antiEntropyMessage = _serializer.Deserialize<AntiEntropyMessage>(messageReceivedEventArgs.AdministrationMessage.Data);
-            var senderBroker = _brokers.Find(x => x.Ipaddress == messageReceivedEventArgs.IpAddress && x.Port == messageReceivedEventArgs.Port);
+            var senderBroker = _messageBrokers.Find(x => x.Host.IPAddress == messageReceivedEventArgs.IpAddress && x.Host.Port == messageReceivedEventArgs.Port);
             senderBroker.CurrentAntiEntropyRound = antiEntropyMessage.AntiEntropyRound;
             //Todo: remove this
             Console.WriteLine("AntiEntropyMessage " + antiEntropyMessage.AntiEntropyRound);
@@ -96,7 +94,7 @@ namespace HarakaMQ.MessageBroker
                 //Cancel the scheduled task from the expected non primary broker
                 _schedular.CancelTask(senderBroker.AntiEntropyRoundScheduledTaskIdAnswer);
                 //Commit messages after they have survived 3 rounds
-                if (_brokers.All(x => x.Active && x.CurrentAntiEntropyRound >= _lastAntiEntropyCommit + 3))
+                if (_messageBrokers.All(x => x.Active && x.CurrentAntiEntropyRound >= _lastAntiEntropyCommit + 3))
                 {
                     _antiEntropy.AntiEntropyAddTentativeMessages(antiEntropyMessage, ref _currentAntiEntropyRound, ref _globalSequenceNumber);
                     _antiEntropy.AntiEntropyCommitStableMessages(ref _lastAntiEntropyCommit, ref _globalSequenceNumber);
@@ -143,7 +141,7 @@ namespace HarakaMQ.MessageBroker
 
         private void SendAntiEntropyMessage()
         {
-            foreach (var broker in _brokers.Where(x => x.Active))
+            foreach (var broker in _messageBrokers.Where(x => x.Active))
             {
                 var numberOfBytesUsed = 0;
                 var tentativeMessagesToSend = _antiEntropy.GetTentativeMessagesToSendForNonPrimaryBroker(ref numberOfBytesUsed, _currentAntiEntropyRound);
@@ -168,7 +166,7 @@ namespace HarakaMQ.MessageBroker
                     Primary = _isPrimary ? _harakaMqMessageBrokerConfiguration.PrimaryNumber : 0,
                     AntiEntropyGarbageCollect = _currentAntiEntropyRound % 3 == 0 // GC every third round
                 }));
-                _udpCommunication.SendAdministrationMessage(administrationMessage, broker.Ipaddress, broker.Port);
+                _udpCommunication.SendAdministrationMessage(administrationMessage, broker.Host);
                 Console.WriteLine("Time: " + _timeSyncProtocol.GetTime());
                 //TODO: activate this later on
                 //_schedular.ScheduleTask(Setup.Settings.AntiEntropyMilliseonds, broker.AntiEntropyRoundScheduledTaskIdAnswer, () =>
@@ -184,7 +182,7 @@ namespace HarakaMQ.MessageBroker
             Console.WriteLine("Time: " + _timeSyncProtocol.GetTime());
 
             _currentAntiEntropyRound = antiEntropyMessage.AntiEntropyRound;
-            var primaryBroker = _brokers.Find(x => x.PrimaryNumber == antiEntropyMessage.PrimaryNumber);
+            var primaryBroker = _messageBrokers.Find(x => x.PrimaryNumber == antiEntropyMessage.PrimaryNumber);
 
             _udpCommunication.SendAdministrationMessage(new AdministrationMessage(MessageType.AntiEntropy, _serializer.Serialize(new AntiEntropyMessage
             {
@@ -194,7 +192,7 @@ namespace HarakaMQ.MessageBroker
                 Subscribers = _antiEntropy.GetSubscribers(),
                 AntiEntropyRound = _currentAntiEntropyRound,
                 Primary = _isPrimary ? _harakaMqMessageBrokerConfiguration.PrimaryNumber : 0
-            })), primaryBroker.Ipaddress, primaryBroker.Port);
+            })), primaryBroker.Host);
             //StartWaitForPrimaryBroker(primaryBroker);
         }
 

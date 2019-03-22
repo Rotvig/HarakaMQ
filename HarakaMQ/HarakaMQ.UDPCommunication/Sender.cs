@@ -27,10 +27,14 @@ namespace HarakaMQ.UDPCommunication
             _socket?.Dispose();
         }
 
+        public async Task SendMsg(SenderMessage msg, Host host)
+        {
+            await _socket.SendToAsync(new ArraySegment<byte>(_serialiser.Serialize(msg)), SocketFlags.None , host.IpEndPoint);
+        }
+
         public async Task SendMsg(SenderMessage msg, string ip, int port)
         {
-            var broadcast = IPAddress.Parse(ip);
-            var ep = new IPEndPoint(broadcast, port);
+            var ep = new IPEndPoint(IPAddress.Parse(ip), port);
 
             await _socket.SendToAsync(new ArraySegment<byte>(_serialiser.Serialize(msg)), SocketFlags.None , ep);
         }

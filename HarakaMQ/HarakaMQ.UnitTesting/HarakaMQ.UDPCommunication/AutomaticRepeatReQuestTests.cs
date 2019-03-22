@@ -115,13 +115,13 @@ namespace HarakaMQ.UnitTests.HarakaMQ.UDPCommunication
             AutomaticRepeatReQuest sut,
             Client client,
             Message message,
-            Broker broker)
+            Host host)
         {
             A.CallTo(() => harakaDb.GetObjects<Client>(A<string>.Ignored)).Returns(new List<Client> {client});
 
-           await sut.Send(message, "topic", broker);
+           await sut.Send(message, "topic", host);
 
-            A.CallTo(() => guranteedDelivery.Send(A<ExtendedPacketInformation>.That.Matches(x => x.Ip == broker.IpAdress && x.Port == broker.Port))).MustHaveHappened();
+            A.CallTo(() => guranteedDelivery.Send(A<ExtendedPacketInformation>.That.Matches(x => x.Ip == host.IPAddress && x.Port == host.Port))).MustHaveHappened();
         }
     }
 }

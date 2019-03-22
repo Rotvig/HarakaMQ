@@ -14,17 +14,17 @@ namespace HarakaMQ.Test.Publisher
     {
         static void Main(string[] args)
         {
-            foreach (var file in Directory.GetFiles(Directory.GetCurrentDirectory() + "/mnesia", "*.db"))
-            {
-                File.Delete(file);
-            }
+//            foreach (var file in Directory.GetFiles(Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location) + "/mnesia", "*.db"))
+//            {
+//                File.Delete(file);
+//            }
 
             var expectedMessages = 10000;
             var numberOfRounds = 100;
             var waitTime = 1000;
 
             var factory = new ConnectionFactory();
-            using (var connection = factory.CreateConnection(new HarakaMQUDPConfiguration() { ListenPort = 11800, Brokers = new List<Broker> { new Broker { IpAdress = "127.0.0.1", Port = 11100 } } }))
+            using (var connection = factory.CreateConnection(new HarakaMQUDPConfiguration() { ListenPort = 11800, Hosts = new List<Host> { new Host { IPAddress = "127.0.0.1", Port = 11100 } } }))
             using (var channel = connection.CreateModel())
             {
                 channel.QueueDeclare("hello");

@@ -10,7 +10,7 @@ namespace HarakaMQ.UDPCommunication.Interfaces
         Task Send(ExtendedPacketInformation msg);
         void ReSend(Guid messageId);
         void ReSend(string clientId, int seqNo);
-        void SendUdpMessage(UdpMessage msg, UdpMessageType type, string ip, int port);
+        void SendUdpMessage(UdpMessage msg, UdpMessageType type, Host host);
         Task RemoveMessagesFromSendQueueAsync(string clientId, int seqNo);
         Task RemoveMessageFromReceiveQueueAsync(Guid msgid);
         event EventHandler<ExtendedPacketInformation> MessageReceived;

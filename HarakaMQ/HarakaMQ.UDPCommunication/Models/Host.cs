@@ -13,7 +13,7 @@ namespace HarakaMQ.UDPCommunication.Models
         public int Port { get; set; }
         [Key(2)]
         public string Id => IPAddress + Port;
-        [Key(3)]
-        public IPEndPoint IpEndPoint => new IPEndPoint(System.Net.IPAddress.Parse(IPAddress), Port);
+//        [Key(3)]
+//        public object IpEndPoint => new IPEndPoint(System.Net.IPAddress.Parse(IPAddress), Port);
     }
 }

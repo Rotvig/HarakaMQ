@@ -31,7 +31,6 @@ namespace HarakaMQ.UDPCommunication
             _logger = logger;
             _sortedReceivedMessages = new Dictionary<string, SortedList<int, ExtendedPacketInformation>>();
             _messagesToPacket = new Dictionary<string, ConcurrentQueue<Tuple<string, Message>>>();
-            logger.LogInformation("Initialized AutomaticRepeatRequest");
         }
 
         public event EventHandler<EventArgs> MessageNotSend;
@@ -162,7 +161,7 @@ namespace HarakaMQ.UDPCommunication
 
             _guranteedDelivery.Send(new ExtendedPacketInformation(package, UdpMessageType.DelayedAck, client.Host.IPAddress, client.Host.Port));
             _schedular.ScheduleRecurringResend(_harakaMqudpConfiguration.DelayedAcknowledgeWaitTimeInMiliseconds, package.Id, _guranteedDelivery.ReSend);
-            //Debug.WriteLine("ClientId :" + Setup.ClientId + " Delayed Ack send at msg num: " + msg.SeqNo);
+            _logger.LogInformation("ClientId :" + client.Id+ " Delayed Ack send at msg num: " + package.SeqNo);
         }
 
         private async void OnMessageReceived(object sender, ExtendedPacketInformation e)
@@ -185,7 +184,8 @@ namespace HarakaMQ.UDPCommunication
                 case UdpMessageType.DelayedAck:
 
                     var client = GetClient(receivedPacket.Host.IPAddress, receivedPacket.Host.Port);
-                    //Debug.WriteLine("Received Delayed ack: " + receivedPacket.Packet.Id);
+                    _logger.LogInformation("Received Delayed ack: " + receivedPacket.Packet.Id);
+
                     if (client.IngoingSeqNo + 1 == receivedPacket.Packet.SeqNo)
                     {
                         //Inorder
@@ -214,7 +214,7 @@ namespace HarakaMQ.UDPCommunication
             //Cancel any recurring resendrequests
             //Todo: Cancel task based on clintid and seqno
             _schedular.CancelTask(receivedPacket.Packet.Id, receivedPacket.SenderClient, receivedPacket.Packet.SeqNo);
-            //Debug.WriteLine("Packet received SeqNo: " + receivedPacket.Packet.SeqNo);
+            _logger.LogWarning("Packet received SeqNo: " + receivedPacket.Packet.SeqNo);
 
 
             //Check Order, dont publish event if its out of order
@@ -311,7 +311,7 @@ namespace HarakaMQ.UDPCommunication
             var client = GetClient(ip, port);
 
             _guranteedDelivery.SendUdpMessage(msg, UdpMessageType.ResendRequest, client.Host);
-            //Debug.WriteLine("ResendScheduled: " + seqNo);
+            _logger.LogWarning("Resend scheduled SequenceNumber: {seqno}", seqNo);
         }
 
         private void SendGarbageCollectMessage(ExtendedPacketInformation extendedPacketInformation)

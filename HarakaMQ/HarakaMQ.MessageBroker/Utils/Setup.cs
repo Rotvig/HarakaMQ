@@ -4,6 +4,8 @@ using HarakaMQ.MessageBroker.Models;
 using HarakaMQ.Shared;
 using HarakaMQ.UDPCommunication;
 using HarakaMQ.UDPCommunication.Interfaces;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 using SimpleInjector;
 
 namespace HarakaMQ.MessageBroker.Utils
@@ -16,23 +18,36 @@ namespace HarakaMQ.MessageBroker.Utils
         public static int PacketSize = 65000;
         public static int TotalPacketSize = PacketSize + AntiEntropySize;
 
-        internal static void Initialize(IHarakaMQUDPConfiguration harakaMQUDPConfiguration, IHarakaMQMessageBrokerConfiguration harakaMqMessageBrokerConfiguration)
+        internal static void Initialize(IHarakaMQUDPConfiguration harakaMQUDPConfiguration, IHarakaMQMessageBrokerConfiguration harakaMqMessageBrokerConfiguration, IConfiguration configuration)
         {
-            // 1. Create a new Simple Injector container
             container = new Container();
-
-            // 2. Configure the container (register)
             ISerializer serializer = null;
+            ILoggerFactory loggerFactory = null;
             if (harakaMQUDPConfiguration.Logging.LogLevel.Default.ToLower() == "debug")
             {
+                loggerFactory = LoggerFactory.Create(builder => 
+                    builder
+                        .AddConfiguration(configuration)
+                        .AddConsole());
                 serializer = new HarakaUTF8JsonSerializer();
-                container.Register(() => serializer, Lifestyle.Singleton);
             }
             else
             {
+                loggerFactory = LoggerFactory.Create(builder => 
+                    builder
+                        .AddConfiguration(configuration)
+                        .AddConsole());
                 serializer = new HarakaMessagePackSerializer();
-                container.Register(() => serializer, Lifestyle.Singleton);
             }
+//            services.TryAdd(ServiceDescriptor.Singleton<ILoggerFactory, LoggerFactory>());
+//            services.TryAdd(ServiceDescriptor.Singleton(typeof(ILogger<>), typeof(Logger<>)));
+            container.Register(() => loggerFactory, Lifestyle.Singleton);
+            container.RegisterConditional(
+                typeof(ILogger<>),
+                c => typeof(Logger<>).MakeGenericType(c.Consumer.ImplementationType),
+                Lifestyle.Singleton,
+                c => true);
+            container.Register(() => serializer, Lifestyle.Singleton);
             container.Register(() => harakaMqMessageBrokerConfiguration, Lifestyle.Singleton);
             container.Register(() => harakaMQUDPConfiguration, Lifestyle.Singleton);
             container.Register<ISmartQueueFactory, SmartQueueFactory>(Lifestyle.Singleton);
@@ -44,8 +59,6 @@ namespace HarakaMQ.MessageBroker.Utils
             container.Register<IHarakaDb>(() => new HarakaDb(serializer, "Topics", PublisherCs), Lifestyle.Singleton);
             container.Register<IPersistenceLayer>(() => new PersistenceLayer(container.GetInstance<IHarakaDb>(), "Topics"), Lifestyle.Singleton);
             container.Register<ITimeSyncProtocol, NTP>(Lifestyle.Singleton);
-
-            // 3. Verify your configuration: Only for testing
             container.Verify();
         }
     }

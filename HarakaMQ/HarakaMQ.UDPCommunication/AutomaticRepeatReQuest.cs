@@ -8,6 +8,7 @@ using HarakaMQ.UDPCommunication.Events;
 using HarakaMQ.UDPCommunication.Interfaces;
 using HarakaMQ.UDPCommunication.Models;
 using HarakaMQ.UDPCommunication.Utils;
+using Microsoft.Extensions.Logging;
 
 namespace HarakaMQ.UDPCommunication
 {
@@ -16,18 +17,21 @@ namespace HarakaMQ.UDPCommunication
         private readonly IGuranteedDelivery _guranteedDelivery;
         private readonly IHarakaDb _harakaDb;
         private readonly IHarakaMQUDPConfiguration _harakaMqudpConfiguration;
+        private readonly ILogger<AutomaticRepeatReQuest> _logger;
         private readonly Dictionary<string, ConcurrentQueue<Tuple<string, Message>>> _messagesToPacket;
         private readonly ISchedular _schedular;
         private readonly Dictionary<string, SortedList<int, ExtendedPacketInformation>> _sortedReceivedMessages;
 
-        public AutomaticRepeatReQuest(IGuranteedDelivery guranteedDelivery, ISchedular schedular, IHarakaDb harakaDb, IHarakaMQUDPConfiguration harakaMqudpConfiguration)
+        public AutomaticRepeatReQuest(IGuranteedDelivery guranteedDelivery, ISchedular schedular, IHarakaDb harakaDb, IHarakaMQUDPConfiguration harakaMqudpConfiguration, ILogger<AutomaticRepeatReQuest> logger)
         {
             _guranteedDelivery = guranteedDelivery;
             _schedular = schedular;
             _harakaDb = harakaDb;
             _harakaMqudpConfiguration = harakaMqudpConfiguration;
+            _logger = logger;
             _sortedReceivedMessages = new Dictionary<string, SortedList<int, ExtendedPacketInformation>>();
             _messagesToPacket = new Dictionary<string, ConcurrentQueue<Tuple<string, Message>>>();
+            logger.LogInformation("Initialized AutomaticRepeatRequest");
         }
 
         public event EventHandler<EventArgs> MessageNotSend;

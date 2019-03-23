@@ -36,7 +36,7 @@ namespace HarakaMQ.MessageBroker
             configurationRoot.Bind("HarakaMQMessageBrokerConfiguration", harakaMessageBrokerConfiguration);
 
             harakaUdpConfiguration.DisableDelayedAcknowledgeForClientWithIds = harakaUdpConfiguration.Hosts.Select(broker => broker.Id).ToList();
-            Setup.Initialize(harakaUdpConfiguration, harakaMessageBrokerConfiguration);
+            Setup.Initialize(harakaUdpConfiguration, harakaMessageBrokerConfiguration, configurationRoot);
             _udpCommunication = Setup.container.GetInstance<IUdpCommunication>();
             _udpCommunication.QueueDeclare += QueueDeclareMessageRecieved;
             _udpCommunication.PublishPackage += PublishMessageRecieved;

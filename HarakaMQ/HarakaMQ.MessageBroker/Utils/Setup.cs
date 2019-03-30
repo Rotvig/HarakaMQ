@@ -11,7 +11,7 @@ namespace HarakaMQ.MessageBroker.Utils
     public static class Setup
     {
         internal static Container container;
-        internal static string PublisherCs = "mnesia/Publishers";
+        internal static string PublisherCs = "Publishers";
         public static int AntiEntropySize = 300;
         public static int PacketSize = 65000;
         public static int TotalPacketSize = PacketSize + AntiEntropySize;

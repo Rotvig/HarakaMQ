@@ -14,11 +14,6 @@ namespace HarakaMQ.Test.Publisher
     {
         static void Main(string[] args)
         {
-            foreach (var file in Directory.GetFiles(Directory.GetCurrentDirectory() + "/mnesia", "*.db"))
-            {
-                File.Delete(file);
-            }
-
             var expectedMessages = 10000;
             var numberOfRounds = 100;
             var waitTime = 1000;

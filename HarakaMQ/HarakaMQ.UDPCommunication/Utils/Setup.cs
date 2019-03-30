@@ -22,7 +22,11 @@ namespace HarakaMQ.UDPCommunication.Utils
             OutgoingMessagesCS = "OutgoingMessages_" + clientId;
             IngoingMessagesCS = "InGoingMessages_" + clientId;
             ClientsCS = "Clients_" + clientId;
+            // 1. Create a new Simple Injector container
             container = new Container();
+
+            // 2. Configure the container (register)
+            container.Register(() => harakaMqudpCopnfiguration, Lifestyle.Singleton);
 
             ISerializer serializer = null;
             ILoggerFactory loggerFactory = null;
@@ -32,6 +36,7 @@ namespace HarakaMQ.UDPCommunication.Utils
                     builder
                         .AddConsole());
                 serializer = new HarakaUTF8JsonSerializer();
+                container.Register(() => serializer, Lifestyle.Singleton);
             }
             else
             {
@@ -39,6 +44,7 @@ namespace HarakaMQ.UDPCommunication.Utils
                     builder
                         .AddConsole());
                 serializer = new HarakaMessagePackSerializer();
+                container.Register(() => serializer, Lifestyle.Singleton);
             }
 
             container.Register(() => loggerFactory, Lifestyle.Singleton);
@@ -57,6 +63,8 @@ namespace HarakaMQ.UDPCommunication.Utils
             container.Register<IGuranteedDelivery, GuranteedDelivery>(Lifestyle.Singleton);
             container.Register<IIdempotentReceiver, IdempotentReceiver>(Lifestyle.Singleton);
             container.Register<IHarakaDb>(() => new HarakaDb(serializer, OutgoingMessagesCS, IngoingMessagesCS, ClientsCS), Lifestyle.Singleton);
+
+            // 3. Verify your configuration: Only for testing
             container.Verify();
         }
     }

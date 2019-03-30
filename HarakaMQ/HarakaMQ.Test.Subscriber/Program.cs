@@ -16,11 +16,6 @@ namespace HarakaMQ.Test.Subscriber
     {
         static void Main(string[] args)
         {
-//            foreach (var file in Directory.GetFiles(Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location) + "/mnesia", "*.db"))
-//            {
-//                File.Delete(file);
-//            }
-
             var expectedMessages = 10000;
 
             var factory = new ConnectionFactory();

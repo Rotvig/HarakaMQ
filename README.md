@@ -1,3 +1,6 @@
+:disappointed_relieved: The message queue is currently not working at the moment I am working on fixing it. I am working on this branch https://github.com/Rotvig/HarakaMQ/tree/add_unit_tests :disappointed_relieved:
+
+
 # HarakaMQ
 Reliable Message Oriented Middleware Based on UDP
 

@@ -22,10 +22,7 @@ namespace HarakaMQ.UDPCommunication.Utils
             OutgoingMessagesCS = "OutgoingMessages_" + clientId;
             IngoingMessagesCS = "InGoingMessages_" + clientId;
             ClientsCS = "Clients_" + clientId;
-            // 1. Create a new Simple Injector container
             container = new Container();
-
-            // 2. Configure the container (register)
             container.Register(() => harakaMqudpCopnfiguration, Lifestyle.Singleton);
 
             ISerializer serializer = null;
@@ -53,8 +50,6 @@ namespace HarakaMQ.UDPCommunication.Utils
                 c => typeof(Logger<>).MakeGenericType(c.Consumer.ImplementationType),
                 Lifestyle.Singleton,
                 c => true);
-            container.Register(() => harakaMqudpCopnfiguration, Lifestyle.Singleton);
-            container.Register(() => serializer, Lifestyle.Singleton);
             container.Register<ISchedular, Schedular>(Lifestyle.Singleton);
             container.Register<ISender, Sender>(Lifestyle.Singleton);
             container.Register<IReceiver, Receiver>(Lifestyle.Singleton);

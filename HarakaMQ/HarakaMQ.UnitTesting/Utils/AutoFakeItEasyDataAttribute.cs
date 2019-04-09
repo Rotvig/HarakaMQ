@@ -49,8 +49,7 @@ namespace HarakaMQ.UnitTests.Utils
             packet.ReturnPort = 80;
             packet.SeqNo = _seqNo;
             var extendedPacketInformation = context.Create<ExtendedPacketInformation>();
-            extendedPacketInformation.Ip = "1234a";
-            extendedPacketInformation.Port = 80;
+            extendedPacketInformation.Host = new Host(){IPAddress = "1234a", Port = 80};
             extendedPacketInformation.UdpMessageType = UdpMessageType.Packet;
             extendedPacketInformation.Packet = packet;
 

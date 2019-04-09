@@ -228,8 +228,7 @@ namespace HarakaMQ.UnitTests.HarakaMQ.MessageBroker
                     new global::HarakaMQ.MessageBroker.Models.MessageBroker
                     {
                         PrimaryNumber = primaryBroker ? 2 : 1,
-                        Port = primaryBroker ? 123 : 0,
-                        Ipaddress = "foo"
+                        Host = new Host() {IPAddress = "foo", Port =  primaryBroker ? 123 : 0 }
                     }
 
                 });

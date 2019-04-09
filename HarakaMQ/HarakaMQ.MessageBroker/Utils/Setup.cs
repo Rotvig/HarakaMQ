@@ -39,8 +39,6 @@ namespace HarakaMQ.MessageBroker.Utils
                         .AddConsole());
                 serializer = new HarakaMessagePackSerializer();
             }
-//            services.TryAdd(ServiceDescriptor.Singleton<ILoggerFactory, LoggerFactory>());
-//            services.TryAdd(ServiceDescriptor.Singleton(typeof(ILogger<>), typeof(Logger<>)));
             container.Register(() => loggerFactory, Lifestyle.Singleton);
             container.RegisterConditional(
                 typeof(ILogger<>),

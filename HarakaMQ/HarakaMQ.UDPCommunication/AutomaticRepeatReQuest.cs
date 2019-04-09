@@ -214,7 +214,7 @@ namespace HarakaMQ.UDPCommunication
             //Cancel any recurring resendrequests
             //Todo: Cancel task based on clintid and seqno
             _schedular.CancelTask(receivedPacket.Packet.Id, receivedPacket.SenderClient, receivedPacket.Packet.SeqNo);
-            _logger.LogWarning("Packet received SeqNo: " + receivedPacket.Packet.SeqNo);
+            _logger.LogInformation("Packet received SeqNo: " + receivedPacket.Packet.SeqNo);
 
 
             //Check Order, dont publish event if its out of order

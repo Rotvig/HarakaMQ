@@ -27,9 +27,10 @@ namespace HarakaMQ.UnitTests.HarakaMQ.UDPCommunication
             ExtendedPacketInformation extendedPacketInformation,
             Client client)
         {
+            harakaMqudpConfiguration.AcknowledgeMessageAfterNumberOfMessages = 1;
             client.IngoingSeqNo = 0;
-            client.Ip = extendedPacketInformation.Ip;
-            client.Port = extendedPacketInformation.Port;
+            client.Host.IPAddress = extendedPacketInformation.Host.IPAddress;
+            client.Host.Port = extendedPacketInformation.Host.Port;
 
             A.CallTo(() => harakaDb.GetObjects<Client>(A<string>.Ignored)).Returns(new List<Client>() {client});
 
@@ -58,9 +59,10 @@ namespace HarakaMQ.UnitTests.HarakaMQ.UDPCommunication
             ExtendedPacketInformation extendedPacketInformation9,
             Client client)
         {
+            harakaMqudpConfiguration.AcknowledgeMessageAfterNumberOfMessages = 1;
             client.IngoingSeqNo = 0;
-            client.Ip = extendedPacketInformation1.Ip;
-            client.Port = extendedPacketInformation1.Port;
+            client.Host.IPAddress = extendedPacketInformation1.Host.IPAddress;
+            client.Host.Port = extendedPacketInformation1.Host.Port;
             
             A.CallTo(() => harakaDb.GetObjects<Client>(A<string>.Ignored)).Returns(new List<Client>() {client});
 
@@ -121,7 +123,7 @@ namespace HarakaMQ.UnitTests.HarakaMQ.UDPCommunication
 
            await sut.Send(message, "topic", host);
 
-            A.CallTo(() => guranteedDelivery.Send(A<ExtendedPacketInformation>.That.Matches(x => x.Ip == host.IPAddress && x.Port == host.Port))).MustHaveHappened();
+            A.CallTo(() => guranteedDelivery.Send(A<ExtendedPacketInformation>.That.Matches(x => x.Host.IPAddress == host.IPAddress && x.Host.Port == host.Port))).MustHaveHappened();
         }
     }
 }

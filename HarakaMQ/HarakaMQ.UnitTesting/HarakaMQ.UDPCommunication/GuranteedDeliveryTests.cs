@@ -33,8 +33,8 @@ namespace HarakaMQ.UnitTests.HarakaMQ.UDPCommunication
         {
             packet.ReturnPort = udpReceiveResult.RemoteEndPoint.Port;
             senderMessage.Type = UdpMessageType.Packet;
-            extendedPacketInformation.Ip = udpReceiveResult.RemoteEndPoint.Address.ToString();
-            extendedPacketInformation.Port = udpReceiveResult.RemoteEndPoint.Port;
+            extendedPacketInformation.Host.IPAddress = udpReceiveResult.RemoteEndPoint.Address.ToString();
+            extendedPacketInformation.Host.Port = udpReceiveResult.RemoteEndPoint.Port;
 
             A.CallTo(() => serializer.Deserialize<SenderMessage>(udpReceiveResult.Buffer)).Returns(senderMessage);
             A.CallTo(() => serializer.Deserialize<Packet>(senderMessage.Body)).Returns(packet);
@@ -43,8 +43,8 @@ namespace HarakaMQ.UnitTests.HarakaMQ.UDPCommunication
 
             sut.MessageReceived += (object o, ExtendedPacketInformation message) =>
             {
-                message.Ip.ShouldBe(extendedPacketInformation.Ip);
-                message.Port.ShouldBe(extendedPacketInformation.Port);
+                message.Host.IPAddress.ShouldBe(extendedPacketInformation.Host.IPAddress);
+                message.Host.Port.ShouldBe(extendedPacketInformation.Host.Port);
                 message.UdpMessageType.ShouldBe(UdpMessageType.Packet);
                 message.Packet.Id.ShouldBe(packet.Id);
             };
@@ -82,9 +82,9 @@ namespace HarakaMQ.UnitTests.HarakaMQ.UDPCommunication
             Client client)
         {
             extendedPacketInformations.First().Packet.SeqNo = 1;
-            extendedPacketInformations.First().Packet.ReturnPort = client.Port;
-            extendedPacketInformations.First().Ip = client.Ip;
-            extendedPacketInformations.First().Port = client.Port;
+            extendedPacketInformations.First().Packet.ReturnPort = client.Host.Port;
+            extendedPacketInformations.First().Host.IPAddress = client.Host.IPAddress;
+            extendedPacketInformations.First().Host.Port = client.Host.Port;
 
             A.CallTo(() => harakaDb.GetObjects<ExtendedPacketInformation>(A<string>.Ignored)).Returns(extendedPacketInformations);
 
@@ -111,7 +111,7 @@ namespace HarakaMQ.UnitTests.HarakaMQ.UDPCommunication
 
             sut.ReSend(id);
 
-            A.CallTo(() => sender.SendMsg(A<SenderMessage>.Ignored, extendedPacketInformation.Ip, extendedPacketInformation.Port)).MustHaveHappened();
+            A.CallTo(() => sender.SendMsg(A<SenderMessage>.Ignored, extendedPacketInformation.Host.IPAddress, extendedPacketInformation.Host.Port)).MustHaveHappened();
         }
 
         [Theory, AutoFakeItEasyData]
@@ -130,7 +130,7 @@ namespace HarakaMQ.UnitTests.HarakaMQ.UDPCommunication
 
             await sut.Send(extendedPacketInformation);
 
-            A.CallTo(() => sender.SendMsg(A<SenderMessage>.Ignored, extendedPacketInformation.Ip, extendedPacketInformation.Port)).MustHaveHappened();
+            A.CallTo(() => sender.SendMsg(A<SenderMessage>.Ignored, extendedPacketInformation.Host.IPAddress, extendedPacketInformation.Host.Port)).MustHaveHappened();
         }
     }
 }

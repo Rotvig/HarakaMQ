@@ -22,12 +22,12 @@ namespace HarakaMQ.UnitTests.HarakaMQ.UDPCommunication
             [Frozen] IGuranteedDelivery guranteedDelivery,
             [Frozen] ISchedular schedular,
             [Frozen] IHarakaDb harakaDb,
-            [Frozen] HarakaMQUDPConfiguration harakaMqudpConfiguration,
+            [Frozen] IHarakaMQUDPConfiguration harakaMqudpConfiguration,
             AutomaticRepeatReQuest sut,
             ExtendedPacketInformation extendedPacketInformation,
             Client client)
         {
-            harakaMqudpConfiguration.AcknowledgeMessageAfterNumberOfMessages = 1;
+            A.CallTo(() => harakaMqudpConfiguration.AcknowledgeMessageAfterNumberOfMessages).Returns(1);
             client.IngoingSeqNo = 0;
             client.Host.IPAddress = extendedPacketInformation.Host.IPAddress;
             client.Host.Port = extendedPacketInformation.Host.Port;
@@ -59,7 +59,7 @@ namespace HarakaMQ.UnitTests.HarakaMQ.UDPCommunication
             ExtendedPacketInformation extendedPacketInformation9,
             Client client)
         {
-            harakaMqudpConfiguration.AcknowledgeMessageAfterNumberOfMessages = 1;
+            A.CallTo(() => harakaMqudpConfiguration.AcknowledgeMessageAfterNumberOfMessages).Returns(1);
             client.IngoingSeqNo = 0;
             client.Host.IPAddress = extendedPacketInformation1.Host.IPAddress;
             client.Host.Port = extendedPacketInformation1.Host.Port;
